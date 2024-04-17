@@ -19,7 +19,7 @@ resource "adyen_webhooks_merchant" "example_webhook" {
     url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"
     username                           = "YOUR_USER"
     password                           = "YOUR_PASSWORD_FROM_TERRAFORM"
-    active                             = true
+    active                             = false
     communication_format               = "json"
     accepts_expired_certificate        = false
     accepts_self_signed_certificate    = true
@@ -27,9 +27,3 @@ resource "adyen_webhooks_merchant" "example_webhook" {
     populate_soap_action_header        = false
   }
 }
-
-output "adyen_webhooks_resource" {
-  value = adyen_webhooks_merchant.example_webhook
-  sensitive = true
-}
-

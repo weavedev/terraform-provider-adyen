@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -105,9 +103,6 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					"id": schema.StringAttribute{
 						Computed:    true,
 						Description: "The unique identifier for the webhook.",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"type": schema.StringAttribute{
 						Required:    true,
@@ -271,6 +266,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 	// Map response body to schema and populate Computed attribute values
 	plan.WebhooksMerchant = webhooksMerchantModel{
 		ID:                              types.StringPointerValue(webhookCreateResponse.Id),
+		Description:                     types.StringPointerValue(webhookCreateResponse.Description),
 		Type:                            types.StringValue(webhookCreateResponse.Type),
 		URL:                             types.StringValue(webhookCreateResponse.Url),
 		Username:                        types.StringPointerValue(webhookCreateResponse.Username),
