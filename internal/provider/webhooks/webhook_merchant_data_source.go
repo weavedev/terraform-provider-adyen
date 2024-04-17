@@ -36,12 +36,12 @@ type webhooksModel struct {
 }
 
 type webhookLinksModel struct {
-	First webhookHrefModel `tfsdk:"first"`
-	Last  webhookHrefModel `tfsdk:"last"`
-	Self  webhookHrefModel `tfsdk:"self"`
+	First webhooksLinksHrefModel `tfsdk:"first"`
+	Last  webhooksLinksHrefModel `tfsdk:"last"`
+	Self  webhooksLinksHrefModel `tfsdk:"self"`
 }
 
-type webhookHrefModel struct {
+type webhooksLinksHrefModel struct {
 	Href types.String `tfsdk:"href"`
 }
 
@@ -71,10 +71,10 @@ type webhookAdditionalModel struct {
 }
 
 type webhookDataLinksModel struct {
-	Self         webhookHrefModel `tfsdk:"self"`
-	GenerateHmac webhookHrefModel `tfsdk:"generate_hmac"`
-	Merchant     webhookHrefModel `tfsdk:"merchant"`
-	TestWebhook  webhookHrefModel `tfsdk:"test_webhook"`
+	Self         webhooksLinksHrefModel `tfsdk:"self"`
+	GenerateHmac webhooksLinksHrefModel `tfsdk:"generate_hmac"`
+	Merchant     webhooksLinksHrefModel `tfsdk:"merchant"`
+	TestWebhook  webhooksLinksHrefModel `tfsdk:"test_webhook"`
 }
 
 func NewWebhookMerchantDataSource() datasource.DataSource {
@@ -235,7 +235,7 @@ func (d *webhooksMerchantDataSource) Read(ctx context.Context, req datasource.Re
 
 		webhookState := webhooksModel{
 			Links: webhookLinksModel{
-				Self: webhookHrefModel{
+				Self: webhooksLinksHrefModel{
 					Href: types.StringValue(*links.Self.Href),
 				},
 			},
@@ -273,12 +273,12 @@ func (d *webhooksMerchantDataSource) Read(ctx context.Context, req datasource.Re
 			webhookState.Data = append(webhookState.Data, webhookDataModel{
 				Links: []webhookDataLinksModel{
 					{
-						Self: webhookHrefModel{
+						Self: webhooksLinksHrefModel{
 							Href: types.StringValue(*links.Self.Href),
 						},
-						GenerateHmac: webhookHrefModel{Href: types.StringValue(*links.GenerateHmac.Href)},
-						Merchant:     webhookHrefModel{Href: types.StringValue(*links.Merchant.Href)},
-						TestWebhook:  webhookHrefModel{Href: types.StringValue(*links.TestWebhook.Href)},
+						GenerateHmac: webhooksLinksHrefModel{Href: types.StringValue(*links.GenerateHmac.Href)},
+						Merchant:     webhooksLinksHrefModel{Href: types.StringValue(*links.Merchant.Href)},
+						TestWebhook:  webhooksLinksHrefModel{Href: types.StringValue(*links.TestWebhook.Href)},
 					},
 				},
 			})

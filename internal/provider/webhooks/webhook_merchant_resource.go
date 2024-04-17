@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/adyen/adyen-go-api-library/v9/src/adyen"
 	"github.com/adyen/adyen-go-api-library/v9/src/management"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -34,37 +33,37 @@ type webhooksMerchantResourceModel struct {
 }
 
 type webhooksMerchantModel struct {
-	ID                              types.String            `tfsdk:"id"`
-	Type                            types.String            `tfsdk:"type"`
-	URL                             types.String            `tfsdk:"url"`
-	Username                        types.String            `tfsdk:"username"`
-	Description                     types.String            `tfsdk:"description"`
-	HasPassword                     types.Bool              `tfsdk:"has_password"`
-	Password                        types.String            `tfsdk:"password"`
-	Active                          types.Bool              `tfsdk:"active"`
-	HasError                        types.Bool              `tfsdk:"has_error"`
-	EncryptionProtocol              types.String            `tfsdk:"encryption_protocol"`
-	CommunicationFormat             types.String            `tfsdk:"communication_format"`
-	AcceptsExpiredCertificate       types.Bool              `tfsdk:"accepts_expired_certificate"`
-	AcceptsSelfSignedCertificate    types.Bool              `tfsdk:"accepts_self_signed_certificate"`
-	AcceptsUntrustedRootCertificate types.Bool              `tfsdk:"accepts_untrusted_root_certificate"`
-	CertificateAlias                types.String            `tfsdk:"certificate_alias"`
-	PopulateSoapActionHeader        types.Bool              `tfsdk:"populate_soap_action_header"`
-	AdditionalSettings              additionalSettingsModel `tfsdk:"additional_settings"`
-	Links                           linksModel              `tfsdk:"links"`
+	ID                              types.String `tfsdk:"id"`
+	Type                            types.String `tfsdk:"type"`
+	URL                             types.String `tfsdk:"url"`
+	Username                        types.String `tfsdk:"username"`
+	Description                     types.String `tfsdk:"description"`
+	HasPassword                     types.Bool   `tfsdk:"has_password"`
+	Password                        types.String `tfsdk:"password"`
+	Active                          types.Bool   `tfsdk:"active"`
+	HasError                        types.Bool   `tfsdk:"has_error"`
+	EncryptionProtocol              types.String `tfsdk:"encryption_protocol"`
+	CommunicationFormat             types.String `tfsdk:"communication_format"`
+	AcceptsExpiredCertificate       types.Bool   `tfsdk:"accepts_expired_certificate"`
+	AcceptsSelfSignedCertificate    types.Bool   `tfsdk:"accepts_self_signed_certificate"`
+	AcceptsUntrustedRootCertificate types.Bool   `tfsdk:"accepts_untrusted_root_certificate"`
+	CertificateAlias                types.String `tfsdk:"certificate_alias"`
+	PopulateSoapActionHeader        types.Bool   `tfsdk:"populate_soap_action_header"`
+	//AdditionalSettings              webhooksMerchantAdditionalSettingsModel `tfsdk:"additional_settings"`
+	//Links                           webhooksMerchantLinksModel              `tfsdk:"links"`
 }
 
-type additionalSettingsModel struct {
-	IncludeEventCodes types.List `tfsdk:"include_event_codes"`
-	ExcludeEventCodes types.List `tfsdk:"exclude_event_codes"`
-	Properties        types.Map  `tfsdk:"properties"`
+type webhooksMerchantAdditionalSettingsModel struct {
+	IncludeEventCodes []types.String `tfsdk:"include_event_codes"`
+	ExcludeEventCodes []types.String `tfsdk:"exclude_event_codes"`
+	Properties        types.Map      `tfsdk:"properties"`
 }
 
-type linksModel struct {
-	Self         types.Map `tfsdk:"self"`
-	GenerateHmac types.Map `tfsdk:"generate_hmac"`
-	Merchant     types.Map `tfsdk:"merchant"`
-	TestWebhook  types.Map `tfsdk:"test_webhook"`
+type webhooksMerchantLinksModel struct {
+	Self         webhooksLinksHrefModel `tfsdk:"self"`
+	GenerateHmac webhooksLinksHrefModel `tfsdk:"generate_hmac"`
+	Merchant     webhooksLinksHrefModel `tfsdk:"merchant"`
+	TestWebhook  webhooksLinksHrefModel `tfsdk:"test_webhook"`
 }
 
 // Configure adds the provider configured client to the resource.
@@ -111,11 +110,12 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 						Description: "The URL the webhook will send requests to.",
 					},
 					"username": schema.StringAttribute{
-						Optional:    true,
+						Required:    true,
 						Description: "The username required for basic authentication.",
 					},
 					"password": schema.StringAttribute{
-						Optional:    true,
+						Sensitive:   true,
+						Required:    true,
 						Description: "The password required for basic authentication.",
 					},
 					"has_password": schema.BoolAttribute{
@@ -131,11 +131,12 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 						Description: "The format of the communication (e.g., 'json').",
 					},
 					"description": schema.StringAttribute{
-						Optional:    true,
+						Computed:    true,
 						Description: "A description of the webhook.",
 					},
 					"encryption_protocol": schema.StringAttribute{
 						Optional:    true,
+						Computed:    true,
 						Description: "The encryption protocol used by the webhook.",
 					},
 					"has_error": schema.BoolAttribute{
@@ -144,6 +145,7 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"certificate_alias": schema.StringAttribute{
 						Optional:    true,
+						Computed:    true,
 						Description: "The alias of the certificate.",
 					},
 					"populate_soap_action_header": schema.BoolAttribute{
@@ -162,37 +164,52 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 						Required:    true,
 						Description: "Indicates if untrusted root certificates are accepted.",
 					},
-					"additional_settings": schema.ObjectAttribute{
-						Computed: true,
-						AttributeTypes: map[string]attr.Type{
-							"properties": types.MapType{
-								ElemType: types.BoolType,
-							},
-							"include_event_codes": types.ListType{
-								ElemType: types.StringType,
-							},
-							"exclude_event_codes": types.ListType{
-								ElemType: types.StringType,
-							},
-						},
-					},
-					"links": schema.ObjectAttribute{
-						Computed: true,
-						AttributeTypes: map[string]attr.Type{
-							"self": types.MapType{
-								ElemType: types.StringType,
-							},
-							"generate_hmac": types.MapType{
-								ElemType: types.StringType,
-							},
-							"merchant": types.MapType{
-								ElemType: types.StringType,
-							},
-							"test_webhook": types.MapType{
-								ElemType: types.StringType,
-							},
-						},
-					},
+					//"additional_settings": schema.SingleNestedAttribute{
+					//	Computed: true,
+					//	Attributes: map[string]schema.Attribute{
+					//		"properties": schema.MapAttribute{
+					//			Computed:    true,
+					//			ElementType: types.BoolType,
+					//		},
+					//		"include_event_codes": schema.ListAttribute{
+					//			Computed:    true,
+					//			ElementType: types.StringType,
+					//		},
+					//		"exclude_event_codes": schema.ListAttribute{
+					//			Computed:    true,
+					//			ElementType: types.StringType,
+					//		},
+					//	},
+					//},
+					//"links": schema.SingleNestedAttribute{
+					//	Computed: true,
+					//	Attributes: map[string]schema.Attribute{
+					//		"self": schema.SingleNestedAttribute{
+					//			Computed: true,
+					//			Attributes: map[string]schema.Attribute{
+					//				"href": schema.StringAttribute{Computed: true},
+					//			},
+					//		},
+					//		"generate_hmac": schema.SingleNestedAttribute{
+					//			Computed: true,
+					//			Attributes: map[string]schema.Attribute{
+					//				"href": schema.StringAttribute{Computed: true},
+					//			},
+					//		},
+					//		"merchant": schema.SingleNestedAttribute{
+					//			Computed: true,
+					//			Attributes: map[string]schema.Attribute{
+					//				"href": schema.StringAttribute{Computed: true},
+					//			},
+					//		},
+					//		"test_webhook": schema.SingleNestedAttribute{
+					//			Computed: true,
+					//			Attributes: map[string]schema.Attribute{
+					//				"href": schema.StringAttribute{Computed: true},
+					//			},
+					//		},
+					//	},
+					//},
 				},
 			},
 		},
@@ -259,61 +276,8 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookCreateResponse.AcceptsUntrustedRootCertificate),
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookCreateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookCreateResponse.CertificateAlias),
+		Password:                        types.StringPointerValue(createMerchantWebhookRequest.Password),
 	}
-
-	//includeEventCodes := []attr.Value{}
-	//for _, code := range plan.WebhooksMerchant.AdditionalSettings.IncludeEventCodes.Elements() {
-	//	includeEventCodes = append(includeEventCodes, code)
-	//}
-	//
-	//excludeEventCodes := []attr.Value{}
-	//for _, code := range plan.WebhooksMerchant.AdditionalSettings.ExcludeEventCodes.Elements() {
-	//	excludeEventCodes = append(excludeEventCodes, code)
-	//}
-	//
-	//propertiesMap := map[string]attr.Value{}
-	//for key, val := range plan.WebhooksMerchant.AdditionalSettings.Properties.Elements() {
-	//	propertiesMap[key] = val
-	//}
-	//
-	//additionalSettingsType := map[string]attr.Type{
-	//	"include_event_codes": types.ListType{ElemType: types.StringType},
-	//	"exclude_event_codes": types.ListType{ElemType: types.StringType},
-	//	"properties":          types.MapType{ElemType: types.BoolType},
-	//}
-	//
-	//additionalSettingsValue := types.ObjectValueMust(additionalSettingsType, map[string]attr.Value{
-	//	"include_event_codes": types.ListValueMust(types.ListType{ElemType: types.StringType}, includeEventCodes),
-	//	"exclude_event_codes": types.ListValueMust(types.ListType{ElemType: types.StringType}, excludeEventCodes),
-	//	"properties":          types.MapValueMust(types.MapType{ElemType: types.BoolType}, propertiesMap),
-	//})
-	//
-	//links := plan.WebhooksMerchant.Links
-	//
-	//linksType := map[string]attr.Type{
-	//	"self": types.MapType{
-	//		ElemType: types.StringType,
-	//	},
-	//	"generate_hmac": types.MapType{
-	//		ElemType: types.StringType,
-	//	},
-	//	"merchant": types.MapType{
-	//		ElemType: types.StringType,
-	//	},
-	//	"test_webhook": types.MapType{
-	//		ElemType: types.StringType,
-	//	},
-	//}
-	//
-	//linksValue := types.ObjectValueMust(linksType, map[string]attr.Value{
-	//	"self":          types.StringValue(links.Self.String()),
-	//	"generate_hmac": types.StringValue(links.GenerateHmac.String()),
-	//	"merchant":      types.StringValue(links.Merchant.String()),
-	//	"test_webhook":  types.StringValue(links.TestWebhook.String()),
-	//})
-
-	//plan.WebhooksMerchant.AdditionalSettings = additionalSettingsValue
-	//plan.WebhooksMerchant.Links = linksValue
 
 	// Set state with the fully populated webhookCreateRequest
 	diags = resp.State.Set(ctx, plan)
