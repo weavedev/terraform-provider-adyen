@@ -1,4 +1,4 @@
-package webhooks
+package provider
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"github.com/adyen/adyen-go-api-library/v9/src/management"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -66,6 +68,8 @@ type webhooksMerchantLinksModel struct {
 	TestWebhook  webhooksLinksHrefModel `tfsdk:"test_webhook"`
 }
 
+//FIXME: running 2nd apply should check if changes were made, currently failing
+
 // Configure adds the provider configured client to the resource.
 func (r *webhookMerchantResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
@@ -100,6 +104,9 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					"id": schema.StringAttribute{
 						Computed:    true,
 						Description: "The unique identifier for the webhook.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"type": schema.StringAttribute{
 						Required:    true,
@@ -114,9 +121,8 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 						Description: "The username required for basic authentication.",
 					},
 					"password": schema.StringAttribute{
-						Sensitive:   true,
 						Required:    true,
-						Description: "The password required for basic authentication.",
+						Description: "The password required for basic authentication.", //TODO: Make sensitive
 					},
 					"has_password": schema.BoolAttribute{
 						Computed:    true,
@@ -301,26 +307,28 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	for _, webhookMerchantState := range listWebhooksMerchant.Data {
+	for _, webhookMerchantData := range listWebhooksMerchant.Data {
 		state = webhooksMerchantResourceModel{
 			webhooksMerchantModel{
-				ID:                              types.StringValue(*webhookMerchantState.Id),
-				Type:                            types.StringValue(webhookMerchantState.Type),
-				URL:                             types.StringValue(webhookMerchantState.Url),
-				Username:                        types.StringValue(*webhookMerchantState.Username),
-				HasPassword:                     types.BoolValue(*webhookMerchantState.HasPassword),
-				Active:                          types.BoolValue(webhookMerchantState.Active),
-				HasError:                        types.BoolValue(*webhookMerchantState.HasError),
-				EncryptionProtocol:              types.StringValue(*webhookMerchantState.EncryptionProtocol),
-				CommunicationFormat:             types.StringValue(webhookMerchantState.CommunicationFormat),
-				AcceptsExpiredCertificate:       types.BoolValue(*webhookMerchantState.AcceptsExpiredCertificate),
-				AcceptsSelfSignedCertificate:    types.BoolValue(*webhookMerchantState.AcceptsSelfSignedCertificate),
-				AcceptsUntrustedRootCertificate: types.BoolValue(*webhookMerchantState.AcceptsUntrustedRootCertificate),
-				PopulateSoapActionHeader:        types.BoolValue(*webhookMerchantState.PopulateSoapActionHeader),
-				CertificateAlias:                types.StringValue(*webhookMerchantState.CertificateAlias),
+				ID:                              types.StringValue(*webhookMerchantData.Id),
+				Type:                            types.StringValue(webhookMerchantData.Type),
+				URL:                             types.StringValue(webhookMerchantData.Url),
+				Username:                        types.StringValue(*webhookMerchantData.Username),
+				HasPassword:                     types.BoolValue(*webhookMerchantData.HasPassword),
+				Active:                          types.BoolValue(webhookMerchantData.Active),
+				HasError:                        types.BoolValue(*webhookMerchantData.HasError),
+				EncryptionProtocol:              types.StringValue(*webhookMerchantData.EncryptionProtocol),
+				CommunicationFormat:             types.StringValue(webhookMerchantData.CommunicationFormat),
+				AcceptsExpiredCertificate:       types.BoolValue(*webhookMerchantData.AcceptsExpiredCertificate),
+				AcceptsSelfSignedCertificate:    types.BoolValue(*webhookMerchantData.AcceptsSelfSignedCertificate),
+				AcceptsUntrustedRootCertificate: types.BoolValue(*webhookMerchantData.AcceptsUntrustedRootCertificate),
+				PopulateSoapActionHeader:        types.BoolValue(*webhookMerchantData.PopulateSoapActionHeader),
+				CertificateAlias:                types.StringValue(*webhookMerchantData.CertificateAlias),
 			},
 		}
 	}
+
+	tflog.Debug(ctx, "Reading merchant webhook...")
 
 	// Set state
 	diags := resp.State.Set(ctx, &state)
@@ -336,4 +344,20 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *webhookMerchantResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state webhooksMerchantResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data := r.client.Management().WebhooksMerchantLevelApi.RemoveWebhookInput(r.client.GetConfig().MerchantAccount, state.WebhooksMerchant.ID.ValueString())
+	_, err := r.client.Management().WebhooksMerchantLevelApi.RemoveWebhook(ctx, data)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Deleting Webhooks Merchant",
+			"Could not delete merchant webhook, unexpected error: "+err.Error(),
+		)
+		return
+	}
 }

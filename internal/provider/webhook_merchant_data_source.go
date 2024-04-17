@@ -1,7 +1,7 @@
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-package webhooks
+package provider
 
 import (
 	"context"
@@ -219,7 +219,7 @@ func (d *webhooksMerchantDataSource) Read(ctx context.Context, req datasource.Re
 	var state webhooksMerchantDataSourceModel
 	data := d.client.Management().WebhooksMerchantLevelApi.ListAllWebhooksInput(d.client.GetConfig().MerchantAccount)
 
-	webhooksMerchant, _, err := d.client.Management().WebhooksMerchantLevelApi.ListAllWebhooks(ctx, data)
+	listWebhooksMerchant, _, err := d.client.Management().WebhooksMerchantLevelApi.ListAllWebhooks(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Adyen Webhooks",
@@ -228,10 +228,10 @@ func (d *webhooksMerchantDataSource) Read(ctx context.Context, req datasource.Re
 		return
 	}
 
-	for _, webhookMerchantData := range webhooksMerchant.Data {
+	for _, webhookMerchantData := range listWebhooksMerchant.Data {
 		links := webhookMerchantData.Links
-		totalItems := webhooksMerchant.ItemsTotal
-		pagesTotal := webhooksMerchant.PagesTotal
+		totalItems := listWebhooksMerchant.ItemsTotal
+		pagesTotal := listWebhooksMerchant.PagesTotal
 
 		webhookState := webhooksModel{
 			Links: webhookLinksModel{
@@ -241,10 +241,10 @@ func (d *webhooksMerchantDataSource) Read(ctx context.Context, req datasource.Re
 			},
 			ItemsTotal:       types.Int64Value(int64(totalItems)),
 			PagesTotal:       types.Int64Value(int64(pagesTotal)),
-			AccountReference: types.StringValue(*webhooksMerchant.AccountReference),
+			AccountReference: types.StringValue(*listWebhooksMerchant.AccountReference),
 		}
 
-		for _, webhookData := range webhooksMerchant.Data {
+		for _, webhookData := range listWebhooksMerchant.Data {
 			webhookState.Data = append(webhookState.Data, webhookDataModel{
 				ID:                              types.StringValue(*webhookData.Id),
 				Type:                            types.StringValue(webhookData.Type),

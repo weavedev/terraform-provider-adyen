@@ -7,16 +7,14 @@ import (
 	"context"
 	"github.com/adyen/adyen-go-api-library/v9/src/adyen"
 	"github.com/adyen/adyen-go-api-library/v9/src/common"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"os"
-	"terraform-provider-adyen/internal/provider/webhooks"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"os"
 )
 
 // Ensure adyenProvider satisfies various provider interfaces.
@@ -218,14 +216,14 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 // Resources defines the resources implemented in the provider.
 func (p *adyenProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		webhooks.NewWebhooksMerchantResource,
+		NewWebhooksMerchantResource,
 	}
 }
 
 // DataSources defines the data sources implemented in the provider.
 func (p *adyenProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		webhooks.NewWebhookMerchantDataSource,
-		webhooks.NewWebhookCompanyDataSource,
+		NewWebhookMerchantDataSource,
+		NewWebhookCompanyDataSource,
 	}
 }

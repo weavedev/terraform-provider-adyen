@@ -1,60 +1,55 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
-package webhooks
+package provider
 
 import (
 	"context"
 	"fmt"
 	"github.com/adyen/adyen-go-api-library/v9/src/adyen"
-	"github.com/adyen/adyen-go-api-library/v9/src/management"
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
+// Ensure the implementation satisfies the expected interfaces.
 var (
-	_ datasource.DataSource              = &webhooksCompanyDataSource{}
-	_ datasource.DataSourceWithConfigure = &webhooksCompanyDataSource{}
+	_ resource.Resource              = &webhooksCompanyResource{}
+	_ resource.ResourceWithConfigure = &webhooksCompanyResource{}
 )
 
-// webhookDataSource defines the data source implementation.
-type webhooksCompanyDataSource struct {
-	client         *adyen.APIClient
-	companyAccount string `tfsdk:"company_account"`
+// NewWebhooksCompanyResource is a helper function to simplify the provider implementation.
+func NewWebhooksCompanyResource() resource.Resource {
+	return &webhooksCompanyResource{}
 }
 
-// webhookDataSource defines the data source implementation.
-type webhooksDataSourceModel struct {
-	Webhooks []management.Webhook `tfsdk:"webhooks_company"`
+// webhooksCompanyResource is the resource implementation.
+type webhooksCompanyResource struct {
+	client *adyen.APIClient
 }
 
-func NewWebhookCompanyDataSource() datasource.DataSource {
-	return &webhooksCompanyDataSource{}
-}
-
-func (d *webhooksCompanyDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+// Metadata returns the resource type name.
+func (r *webhooksCompanyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_webhooks_company"
 }
 
-func (d *webhooksCompanyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+// Configure adds the provider configured client to the resource.
+func (r *webhooksCompanyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
 
 	client, ok := req.ProviderData.(*adyen.APIClient)
+
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *adyen.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *hashicups.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	d.client = client
+	r.client = client
 }
 
-func (d *webhooksCompanyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *webhooksCompanyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"webhooks_company": schema.ListNestedAttribute{
@@ -129,28 +124,18 @@ func (d *webhooksCompanyDataSource) Schema(ctx context.Context, req datasource.S
 	}
 }
 
+// Create creates the resource and sets the initial Terraform state.
+func (r *webhooksCompanyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+}
+
 // Read refreshes the Terraform state with the latest data.
-func (d *webhooksCompanyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state webhooksDataSourceModel
-	data := d.client.Management().WebhooksCompanyLevelApi.ListAllWebhooksInput(d.companyAccount)
+func (r *webhooksCompanyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+}
 
-	webhooksCompany, _, err := d.client.Management().WebhooksCompanyLevelApi.ListAllWebhooks(ctx, data)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Read Adyen Webhooks",
-			err.Error(),
-		)
-		return
-	}
+// Update updates the resource and sets the updated Terraform state on success.
+func (r *webhooksCompanyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+}
 
-	for _, webhooksCompany := range webhooksCompany.Data {
-		state.Webhooks = append(state.Webhooks, webhooksCompany)
-	}
-
-	// Set state
-	diags := resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+// Delete deletes the resource and removes the Terraform state on success.
+func (r *webhooksCompanyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 }
