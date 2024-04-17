@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/adyen/adyen-go-api-library/v9/src/adyen"
 	"github.com/adyen/adyen-go-api-library/v9/src/management"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -122,6 +123,7 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"password": schema.StringAttribute{
 						Required:    true,
+						Sensitive:   true,
 						Description: "The password required for basic authentication.", //TODO: Make sensitive
 					},
 					"has_password": schema.BoolAttribute{
@@ -340,6 +342,72 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *webhookMerchantResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	tflog.Debug(ctx, "Updating adyen merchant webhook")
+
+	// Retrieve values from the plan
+	var plan webhooksMerchantResourceModel
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Generate API request body from plan
+	updateMerchantWebhookRequest := &management.UpdateMerchantWebhookRequest{
+		AcceptsExpiredCertificate:       plan.WebhooksMerchant.AcceptsExpiredCertificate.ValueBoolPointer(),
+		AcceptsSelfSignedCertificate:    plan.WebhooksMerchant.AcceptsSelfSignedCertificate.ValueBoolPointer(),
+		AcceptsUntrustedRootCertificate: plan.WebhooksMerchant.AcceptsUntrustedRootCertificate.ValueBoolPointer(),
+		Active:                          plan.WebhooksMerchant.Active.ValueBoolPointer(),
+		CommunicationFormat:             plan.WebhooksMerchant.CommunicationFormat.ValueStringPointer(),
+		Password:                        plan.WebhooksMerchant.Password.ValueStringPointer(),
+		PopulateSoapActionHeader:        plan.WebhooksMerchant.PopulateSoapActionHeader.ValueBoolPointer(),
+		Url:                             plan.WebhooksMerchant.URL.ValueStringPointer(),
+		Username:                        plan.WebhooksMerchant.Username.ValueStringPointer(),
+	}
+
+	// Create a new webhook
+	webhookUpdateRequest := r.client.
+		Management().
+		WebhooksMerchantLevelApi.
+		UpdateWebhookInput(r.client.GetConfig().MerchantAccount, plan.WebhooksMerchant.ID.ValueString()).
+		UpdateMerchantWebhookRequest(*updateMerchantWebhookRequest)
+	webhookUpdateResponse, _, err := r.client.
+		Management().
+		WebhooksMerchantLevelApi.
+		UpdateWebhook(ctx, webhookUpdateRequest)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating merchant webhook",
+			"Could not create merchant webhook, unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	// Map response body to schema and populate Computed attribute values
+	plan.WebhooksMerchant = webhooksMerchantModel{
+		ID:                              types.StringPointerValue(webhookUpdateResponse.Id),
+		Type:                            types.StringValue(webhookUpdateResponse.Type),
+		URL:                             types.StringValue(webhookUpdateResponse.Url),
+		Username:                        types.StringPointerValue(webhookUpdateResponse.Username),
+		HasPassword:                     types.BoolPointerValue(webhookUpdateResponse.HasPassword),
+		Active:                          types.BoolValue(webhookUpdateResponse.Active),
+		HasError:                        types.BoolPointerValue(webhookUpdateResponse.HasError),
+		EncryptionProtocol:              types.StringPointerValue(webhookUpdateResponse.EncryptionProtocol),
+		CommunicationFormat:             types.StringValue(webhookUpdateResponse.CommunicationFormat),
+		AcceptsExpiredCertificate:       types.BoolPointerValue(webhookUpdateResponse.AcceptsExpiredCertificate),
+		AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookUpdateResponse.AcceptsSelfSignedCertificate),
+		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookUpdateResponse.AcceptsUntrustedRootCertificate),
+		PopulateSoapActionHeader:        types.BoolPointerValue(webhookUpdateResponse.PopulateSoapActionHeader),
+		CertificateAlias:                types.StringPointerValue(webhookUpdateResponse.CertificateAlias),
+		Password:                        types.StringPointerValue(updateMerchantWebhookRequest.Password),
+	}
+
+	// Set state with the fully populated webhookCreateRequest
+	diags = resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
@@ -360,4 +428,9 @@ func (r *webhookMerchantResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	}
+}
+
+func (r *webhookMerchantResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import ID and save to id attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
