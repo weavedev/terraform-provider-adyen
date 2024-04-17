@@ -4,11 +4,23 @@
 package provider
 
 import (
+	"github.com/adyen/adyen-go-api-library/v9/src/adyen"
+	"github.com/adyen/adyen-go-api-library/v9/src/common"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/stretchr/testify/suite"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
+
+var testAccProviderWebhooksMerchant *schema.Provider
+
+type AcceptanceSuite struct {
+	suite.Suite
+	client *adyen.APIClient
+}
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during
 // acceptance testing. The factory function will be invoked for every Terraform
@@ -18,8 +30,24 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 	"adyen": providerserver.NewProtocol6WithError(New("test")()),
 }
 
+func (s *AcceptanceSuite) SetupSuite() {
+	conf := &common.Config{
+		ApiKey:          os.Getenv("ADYEN_API_KEY"),
+		Environment:     common.Environment(os.Getenv("ADYEN_API_ENVIRONMENT")),
+		MerchantAccount: os.Getenv("ADYEN_API_MERCHANT_ACCOUNT"),
+	}
+
+	s.client = adyen.NewClient(conf)
+}
+
 func testAccPreCheck(t *testing.T) {
-	// You can add code here to run prior to any test case execution, for example assertions
-	// about the appropriate environment variables being set are common to see in a pre-check
-	// function.
+	if v := os.Getenv("ADYEN_API_KEY"); v == "" {
+		t.Fatal("ADYEN_API_KEY must be set for acceptance tests")
+	}
+	if v := os.Getenv("ADYEN_API_ENVIRONMENT"); v == "" {
+		t.Fatal("ADYEN_API_ENVIRONMENT must be set for acceptance tests")
+	}
+	if v := os.Getenv("ADYEN_API_MERCHANT_ACCOUNT"); v == "" {
+		t.Fatal("ADYEN_API_MERCHANT_ACCOUNT must be set for acceptance tests")
+	}
 }
