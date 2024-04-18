@@ -7,10 +7,10 @@ terraform {
 }
 
 provider "adyen" {
-  api_key = "API_KEY"
-  environment = "test" // "live"
+  api_key          = "API_KEY"
+  environment      = "test" // "live"
   merchant_account = "WeaveAccountECOM"
-  company_account = "WeaveAccount"
+  company_account  = "WeaveAccount"
 }
 
 data "adyen_webhooks_merchant" "example" {}

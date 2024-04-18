@@ -98,7 +98,8 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"webhooks_merchant": schema.SingleNestedAttribute{
-				Required: true,
+				Description: "Manages a webhook on merchant level.",
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Computed:    true,
@@ -119,7 +120,7 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					"password": schema.StringAttribute{
 						Required:    true,
 						Sensitive:   true,
-						Description: "The password required for basic authentication.", //TODO: Make sensitive
+						Description: "The password required for basic authentication.",
 					},
 					"has_password": schema.BoolAttribute{
 						Computed:    true,
@@ -167,52 +168,6 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 						Required:    true,
 						Description: "Indicates if untrusted root certificates are accepted.",
 					},
-					//"additional_settings": schema.SingleNestedAttribute{
-					//	Computed: true,
-					//	Attributes: map[string]schema.Attribute{
-					//		"properties": schema.MapAttribute{
-					//			Computed:    true,
-					//			ElementType: types.BoolType,
-					//		},
-					//		"include_event_codes": schema.ListAttribute{
-					//			Computed:    true,
-					//			ElementType: types.StringType,
-					//		},
-					//		"exclude_event_codes": schema.ListAttribute{
-					//			Computed:    true,
-					//			ElementType: types.StringType,
-					//		},
-					//	},
-					//},
-					//"links": schema.SingleNestedAttribute{
-					//	Computed: true,
-					//	Attributes: map[string]schema.Attribute{
-					//		"self": schema.SingleNestedAttribute{
-					//			Computed: true,
-					//			Attributes: map[string]schema.Attribute{
-					//				"href": schema.StringAttribute{Computed: true},
-					//			},
-					//		},
-					//		"generate_hmac": schema.SingleNestedAttribute{
-					//			Computed: true,
-					//			Attributes: map[string]schema.Attribute{
-					//				"href": schema.StringAttribute{Computed: true},
-					//			},
-					//		},
-					//		"merchant": schema.SingleNestedAttribute{
-					//			Computed: true,
-					//			Attributes: map[string]schema.Attribute{
-					//				"href": schema.StringAttribute{Computed: true},
-					//			},
-					//		},
-					//		"test_webhook": schema.SingleNestedAttribute{
-					//			Computed: true,
-					//			Attributes: map[string]schema.Attribute{
-					//				"href": schema.StringAttribute{Computed: true},
-					//			},
-					//		},
-					//	},
-					//},
 				},
 			},
 		},
