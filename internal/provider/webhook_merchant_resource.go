@@ -107,7 +107,7 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"type": schema.StringAttribute{
 						Required:    true,
-						Description: "The type of the webhook.",
+						Description: "The type of the webhook.", //TODO: list options
 					},
 					"url": schema.StringAttribute{
 						Required:    true,
@@ -132,7 +132,7 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"communication_format": schema.StringAttribute{
 						Required:    true,
-						Description: "The format of the communication (e.g., 'json').",
+						Description: "The format of the communication (e.g., 'json').", //TODO: list options
 					},
 					"description": schema.StringAttribute{
 						Computed:    true,
@@ -218,7 +218,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	// Map response body to schema and populate Computed attribute values
+	// Map response body to schema and populate with attribute values
 	plan.WebhooksMerchant = webhooksMerchantModel{
 		ID:                              types.StringPointerValue(webhookCreateResponse.Id),
 		Description:                     types.StringPointerValue(webhookCreateResponse.Description),
@@ -235,7 +235,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookCreateResponse.AcceptsUntrustedRootCertificate),
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookCreateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookCreateResponse.CertificateAlias),
-		Password:                        types.StringPointerValue(createMerchantWebhookRequest.Password),
+		Password:                        types.StringPointerValue(createMerchantWebhookRequest.Password), //FIXME: figure out how to hide this / or if not needed to hide
 	}
 
 	// Set state with the fully populated webhookCreateRequest
@@ -249,9 +249,18 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 // Read refreshes the Terraform state with the latest data.
 func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state webhooksMerchantResourceModel
-	data := r.client.Management().WebhooksMerchantLevelApi.ListAllWebhooksInput(r.client.GetConfig().MerchantAccount)
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	listWebhooksMerchant, _, err := r.client.Management().WebhooksMerchantLevelApi.ListAllWebhooks(ctx, data)
+	var data management.WebhooksMerchantLevelApiGetWebhookInput
+	if r.client.GetConfig().MerchantAccount != "" && state.WebhooksMerchant.ID.ValueString() != "" {
+		data = r.client.Management().WebhooksMerchantLevelApi.GetWebhookInput(r.client.GetConfig().MerchantAccount, state.WebhooksMerchant.ID.ValueString())
+	}
+
+	webhookMerchantData, _, err := r.client.Management().WebhooksMerchantLevelApi.GetWebhook(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Adyen Webhooks",
@@ -260,31 +269,29 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	for _, webhookMerchantData := range listWebhooksMerchant.Data {
-		state = webhooksMerchantResourceModel{
-			webhooksMerchantModel{
-				ID:                              types.StringValue(*webhookMerchantData.Id),
-				Type:                            types.StringValue(webhookMerchantData.Type),
-				URL:                             types.StringValue(webhookMerchantData.Url),
-				Username:                        types.StringValue(*webhookMerchantData.Username),
-				HasPassword:                     types.BoolValue(*webhookMerchantData.HasPassword),
-				Active:                          types.BoolValue(webhookMerchantData.Active),
-				HasError:                        types.BoolValue(*webhookMerchantData.HasError),
-				EncryptionProtocol:              types.StringValue(*webhookMerchantData.EncryptionProtocol),
-				CommunicationFormat:             types.StringValue(webhookMerchantData.CommunicationFormat),
-				AcceptsExpiredCertificate:       types.BoolValue(*webhookMerchantData.AcceptsExpiredCertificate),
-				AcceptsSelfSignedCertificate:    types.BoolValue(*webhookMerchantData.AcceptsSelfSignedCertificate),
-				AcceptsUntrustedRootCertificate: types.BoolValue(*webhookMerchantData.AcceptsUntrustedRootCertificate),
-				PopulateSoapActionHeader:        types.BoolValue(*webhookMerchantData.PopulateSoapActionHeader),
-				CertificateAlias:                types.StringValue(*webhookMerchantData.CertificateAlias),
-			},
-		}
+	state = webhooksMerchantResourceModel{
+		webhooksMerchantModel{
+			ID:                              types.StringPointerValue(webhookMerchantData.Id),
+			Type:                            types.StringValue(webhookMerchantData.Type),
+			URL:                             types.StringValue(webhookMerchantData.Url),
+			Username:                        types.StringPointerValue(webhookMerchantData.Username),
+			HasPassword:                     types.BoolPointerValue(webhookMerchantData.HasPassword),
+			Active:                          types.BoolValue(webhookMerchantData.Active),
+			HasError:                        types.BoolPointerValue(webhookMerchantData.HasError),
+			EncryptionProtocol:              types.StringPointerValue(webhookMerchantData.EncryptionProtocol),
+			CommunicationFormat:             types.StringValue(webhookMerchantData.CommunicationFormat),
+			AcceptsExpiredCertificate:       types.BoolPointerValue(webhookMerchantData.AcceptsExpiredCertificate),
+			AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookMerchantData.AcceptsSelfSignedCertificate),
+			AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantData.AcceptsUntrustedRootCertificate),
+			PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantData.PopulateSoapActionHeader),
+			CertificateAlias:                types.StringPointerValue(webhookMerchantData.CertificateAlias),
+		},
 	}
 
 	tflog.Debug(ctx, "Reading merchant webhook...")
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -4,9 +4,13 @@
 package provider
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/adyen/adyen-go-api-library/v9/src/adyen"
 	"github.com/adyen/adyen-go-api-library/v9/src/common"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/suite"
 	"os"
 	"testing"
@@ -50,4 +54,29 @@ func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("ADYEN_API_MERCHANT_ACCOUNT"); v == "" {
 		t.Fatal("ADYEN_API_MERCHANT_ACCOUNT must be set for acceptance tests")
 	}
+}
+
+/*
+PlanCheck is used for debugging terraform plan resources while writing acceptance tests. To be used in *_test.go files within a []resource.TestStep{}:
+
+	ConfigPlanChecks: resource.ConfigPlanChecks{
+		PostApplyPreRefresh: []plancheck.PlanCheck{
+			DebugPlan(),
+			},
+	},
+*/
+var _ plancheck.PlanCheck = debugPlan{}
+
+type debugPlan struct{}
+
+func (e debugPlan) CheckPlan(ctx context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse) {
+	rd, err := json.MarshalIndent(req.Plan, "", "    ")
+	if err != nil {
+		fmt.Println("error marshalling machine-readable plan output:", err)
+	}
+	fmt.Printf("req.Plan - %s\n", string(rd))
+}
+
+func DebugPlan() plancheck.PlanCheck {
+	return debugPlan{}
 }

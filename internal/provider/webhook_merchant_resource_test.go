@@ -1,18 +1,18 @@
 package provider
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"os"
 	"testing"
+	"text/template"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccCheckAdyenWebhookMerchantDestroy(tfstate *terraform.State) error {
-	//TODO: can be simplified
 	suite := new(AcceptanceSuite)
 	suite.SetupSuite()
 	client := suite.client
@@ -22,8 +22,8 @@ func testAccCheckAdyenWebhookMerchantDestroy(tfstate *terraform.State) error {
 		if rs.Type == "adyen_webhooks_merchant" && ok {
 			data := client.Management().WebhooksMerchantLevelApi.GetWebhookInput(client.GetConfig().MerchantAccount, value)
 			_, resp, err := client.Management().WebhooksMerchantLevelApi.GetWebhook(context.Background(), data)
-			if resp.StatusCode == 404 {
-				fmt.Printf("adyen_webhooks_merchant with id %s has been removed\n", rs.Primary.ID)
+			if resp.StatusCode == 204 { // 204 No Content error code from Adyen if resource does not exist.
+				fmt.Printf("adyen_webhooks_merchant with id: '%s' has been removed\n", value)
 				continue
 			}
 			if err != nil {
@@ -36,112 +36,80 @@ func testAccCheckAdyenWebhookMerchantDestroy(tfstate *terraform.State) error {
 	return nil
 }
 
-var _ plancheck.PlanCheck = debugPlan{}
-
-type debugPlan struct{}
-
-func (e debugPlan) CheckPlan(ctx context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse) {
-	rd, err := json.MarshalIndent(req.Plan, "", "    ")
-	if err != nil {
-		fmt.Println("error marshalling machine-readable plan output:", err)
-	}
-	fmt.Printf("req.Plan - %s\n", string(rd))
-}
-
-func DebugPlan() plancheck.PlanCheck {
-	return debugPlan{}
-}
-
 func TestAccWebhookMerchantResource(t *testing.T) {
-	t.Parallel()
+	resourceName := "adyen_webhooks_merchant.test"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		//CheckDestroy:             testAccCheckAdyenWebhookMerchantDestroy, //FIXME: destroy results in 301 error
+		CheckDestroy:             testAccCheckAdyenWebhookMerchantDestroy,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:   testConfigCreate(),
-				PlanOnly: true,
-				//TODO: add below debug func to notes
-				ExpectNonEmptyPlan: true, // FIXME: only way to make the test work that I know of, until further notice.
+				Config:             testProviderClientFromTmpl(t) + testConfigCreate(),
+				ExpectNonEmptyPlan: true, // Creating a tf resource will propose changes, that's why this value is set to 'true'.
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// TODO: Can be made more generic, resourceName param
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.type", "standard"),
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.url", "https://webhook.site/test-uuid"),
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.username", "YOUR_TEST_USER_1"),
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.active", "false"),
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.communication_format", "json"),
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.accepts_expired_certificate", "false"),
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.accepts_self_signed_certificate", "true"),
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.accepts_untrusted_root_certificate", "true"),
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test", "webhooks_merchant.populate_soap_action_header", "false"),
-				),
-			},
-			{
-				Config:             testConfigUpdate(),
-				Destroy:            true,
-				ExpectNonEmptyPlan: true, // FIXME: only way to make the test work that I know of, until further notice.
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// TODO: Can be made more generic, resourceName param
-					resource.TestCheckResourceAttr("adyen_webhooks_merchant.test_update", "webhooks_merchant.username", "YOUR_TEST_USER_2"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.type", "standard"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.url", "https://webhook.site/test-uuid"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.username", "YOUR_TEST_USER_1"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.active", "false"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.communication_format", "json"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.accepts_expired_certificate", "false"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.accepts_self_signed_certificate", "true"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.accepts_untrusted_root_certificate", "true"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.populate_soap_action_header", "false"),
 				),
 			},
 		},
 	})
 }
 
-// TODO: make test more generic by adding resourceName param + generic provider + generic tf resource
 func testConfigCreate() string {
 	return `
-provider "adyen" {
-  api_key = "api-key"
-  environment = "test"
-  merchant_account = "WeaveAccountECOM"
-  company_account = "WeaveAccount"
-}
-
-resource "adyen_webhooks_merchant" "test" {
-	webhooks_merchant = {
-		type                               = "standard"
-		url                                = "https://webhook.site/test-uuid"
-		username                           = "YOUR_TEST_USER_1"
-		password                           = "YOUR_TEST_PASSWORD_FROM_TERRAFORM_1"
-		active                             = false
-		communication_format               = "json"
-		accepts_expired_certificate        = false
-		accepts_self_signed_certificate    = true
-		accepts_untrusted_root_certificate = true
-		populate_soap_action_header        = false
+	resource "adyen_webhooks_merchant" "test" {
+		webhooks_merchant = {
+			type                               = "standard"
+			url                                = "https://webhook.site/test-uuid"
+			username                           = "YOUR_TEST_USER_1"
+			password                           = "YOUR_TEST_PASSWORD_FROM_TERRAFORM_1"
+			active                             = false
+			communication_format               = "json"
+			accepts_expired_certificate        = false
+			accepts_self_signed_certificate    = true
+			accepts_untrusted_root_certificate = true
+			populate_soap_action_header        = false
+		}
 	}
-}
 `
 }
 
-func testConfigUpdate() string {
-	return `
-provider "adyen" {
-  api_key = "api-key"
-  environment = "test"
-  merchant_account = "WeaveAccountECOM"
-  company_account = "WeaveAccount"
-}
-
-resource "adyen_webhooks_merchant" "test_update" {
-	webhooks_merchant = {
-		type                               = "standard"
-		url                                = "https://webhook.site/test-uuid"
-		username                           = "YOUR_TEST_USER_2"
-		password                           = "YOUR_TEST_PASSWORD_FROM_TERRAFORM_2"
-		active                             = false
-		communication_format               = "json"
-		accepts_expired_certificate        = false
-		accepts_self_signed_certificate    = true
-		accepts_untrusted_root_certificate = true
-		populate_soap_action_header        = false
+func testProviderClientFromTmpl(t *testing.T) string {
+	tmplString := `
+	provider "adyen" {
+		api_key = "{{.ApiKey}}"
+		environment = "{{.Environment}}"
+		merchant_account = "{{.MerchantAccount}}"
+		company_account  = "{{.CompanyAccount}}"
 	}
-}
-`
+
+	`
+
+	tmpl, err := template.New("providerClient").Parse(tmplString)
+	if err != nil {
+		t.Fatal("could not create template string from env vars")
+	}
+	varMap := map[string]interface{}{
+		"ApiKey":          os.Getenv("ADYEN_API_KEY"),
+		"Environment":     os.Getenv("ADYEN_API_ENVIRONMENT"),
+		"MerchantAccount": os.Getenv("ADYEN_API_MERCHANT_ACCOUNT"),
+		"CompanyAccount":  os.Getenv("ADYEN_API_COMPANY_ACCOUNT"),
+	}
+
+	var renderedConfig bytes.Buffer
+	if err := tmpl.Execute(&renderedConfig, varMap); err != nil {
+		panic("Failed to render template: " + err.Error())
+	}
+
+	return renderedConfig.String()
 }

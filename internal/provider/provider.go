@@ -58,7 +58,7 @@ func (p *adyenProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 				MarkdownDescription: "The API Key for the Adyen API Client.",
 			},
 			"environment": schema.StringAttribute{
-				MarkdownDescription: "The Development Environment for the Adyen API Client.",
+				MarkdownDescription: "The Development Environment for the Adyen API Client.", //TODO: list options
 				Required:            true,
 			},
 			"merchant_account": schema.StringAttribute{
@@ -224,6 +224,5 @@ func (p *adyenProvider) Resources(ctx context.Context) []func() resource.Resourc
 func (p *adyenProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewWebhookMerchantDataSource,
-		NewWebhookCompanyDataSource,
 	}
 }
