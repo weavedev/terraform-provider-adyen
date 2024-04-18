@@ -41,7 +41,7 @@ func TestAccWebhookMerchantResource(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckAdyenWebhookMerchantDestroy,
+		CheckDestroy:             testAccCheckAdyenWebhookMerchantDestroy, //TODO: fix warning for 'dangling resources'
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
