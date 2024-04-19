@@ -225,7 +225,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 	tflog.Debug(ctx, "Creating adyen merchant webhook")
 
 	// Retrieve values from the plan
-	var plan webhooksMerchantResourceModel //TODO: consider changing this directly to a `webhooksMerchantModel`.
+	var plan webhooksMerchantResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
