@@ -258,15 +258,15 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Create a new webhook
-	webhookCreateRequest := r.client.
+	webhookMerchantCreateRequest := r.client.
 		Management().
 		WebhooksMerchantLevelApi.
 		SetUpWebhookInput(r.client.GetConfig().MerchantAccount).
 		CreateMerchantWebhookRequest(*createMerchantWebhookRequest)
-	webhookCreateResponse, _, err := r.client.
+	webhookMerchantCreateResponse, _, err := r.client.
 		Management().
 		WebhooksMerchantLevelApi.
-		SetUpWebhook(ctx, webhookCreateRequest)
+		SetUpWebhook(ctx, webhookMerchantCreateRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating merchant webhook",
@@ -276,39 +276,39 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	var includeEventCodes []attr.Value
-	for _, code := range webhookCreateResponse.AdditionalSettings.IncludeEventCodes {
+	for _, code := range webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes {
 		includeEventCodes = append(includeEventCodes, types.StringValue(code))
 	}
 
 	var excludeEventCodes []attr.Value
-	for _, code := range webhookCreateResponse.AdditionalSettings.ExcludeEventCodes {
+	for _, code := range webhookMerchantCreateResponse.AdditionalSettings.ExcludeEventCodes {
 		excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
 	}
 
 	properties := make(map[string]attr.Value)
-	if webhookCreateResponse.AdditionalSettings.Properties != nil {
-		for k, v := range *webhookCreateResponse.AdditionalSettings.Properties {
+	if webhookMerchantCreateResponse.AdditionalSettings.Properties != nil {
+		for k, v := range *webhookMerchantCreateResponse.AdditionalSettings.Properties {
 			properties[k] = types.BoolValue(v)
 		}
 	}
 
 	// Map response body to schema and populate with attribute values
 	plan.WebhooksMerchant = webhooksMerchantModel{
-		ID:                              types.StringPointerValue(webhookCreateResponse.Id),
-		Description:                     types.StringPointerValue(webhookCreateResponse.Description),
-		Type:                            types.StringValue(webhookCreateResponse.Type),
-		URL:                             types.StringValue(webhookCreateResponse.Url),
-		Username:                        types.StringPointerValue(webhookCreateResponse.Username),
-		HasPassword:                     types.BoolPointerValue(webhookCreateResponse.HasPassword),
-		Active:                          types.BoolValue(webhookCreateResponse.Active),
-		HasError:                        types.BoolPointerValue(webhookCreateResponse.HasError),
-		EncryptionProtocol:              types.StringPointerValue(webhookCreateResponse.EncryptionProtocol),
-		CommunicationFormat:             types.StringValue(webhookCreateResponse.CommunicationFormat),
-		AcceptsExpiredCertificate:       types.BoolPointerValue(webhookCreateResponse.AcceptsExpiredCertificate),
-		AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookCreateResponse.AcceptsSelfSignedCertificate),
-		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookCreateResponse.AcceptsUntrustedRootCertificate),
-		PopulateSoapActionHeader:        types.BoolPointerValue(webhookCreateResponse.PopulateSoapActionHeader),
-		CertificateAlias:                types.StringPointerValue(webhookCreateResponse.CertificateAlias),
+		ID:                              types.StringPointerValue(webhookMerchantCreateResponse.Id),
+		Description:                     types.StringPointerValue(webhookMerchantCreateResponse.Description),
+		Type:                            types.StringValue(webhookMerchantCreateResponse.Type),
+		URL:                             types.StringValue(webhookMerchantCreateResponse.Url),
+		Username:                        types.StringPointerValue(webhookMerchantCreateResponse.Username),
+		HasPassword:                     types.BoolPointerValue(webhookMerchantCreateResponse.HasPassword),
+		Active:                          types.BoolValue(webhookMerchantCreateResponse.Active),
+		HasError:                        types.BoolPointerValue(webhookMerchantCreateResponse.HasError),
+		EncryptionProtocol:              types.StringPointerValue(webhookMerchantCreateResponse.EncryptionProtocol),
+		CommunicationFormat:             types.StringValue(webhookMerchantCreateResponse.CommunicationFormat),
+		AcceptsExpiredCertificate:       types.BoolPointerValue(webhookMerchantCreateResponse.AcceptsExpiredCertificate),
+		AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookMerchantCreateResponse.AcceptsSelfSignedCertificate),
+		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantCreateResponse.AcceptsUntrustedRootCertificate),
+		PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantCreateResponse.PopulateSoapActionHeader),
+		CertificateAlias:                types.StringPointerValue(webhookMerchantCreateResponse.CertificateAlias),
 		Links: types.ObjectValueMust(
 			map[string]attr.Type{
 				"self": types.ObjectType{
@@ -335,22 +335,22 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 				"self": types.ObjectValueMust(map[string]attr.Type{
 					"href": types.StringType,
 				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookCreateResponse.Links.Self.Href),
+					"href": types.StringPointerValue(webhookMerchantCreateResponse.Links.Self.Href),
 				}),
 				"generate_hmac": types.ObjectValueMust(map[string]attr.Type{
 					"href": types.StringType,
 				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookCreateResponse.Links.Self.Href),
+					"href": types.StringPointerValue(webhookMerchantCreateResponse.Links.Self.Href),
 				}),
 				"merchant": types.ObjectValueMust(map[string]attr.Type{
 					"href": types.StringType,
 				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookCreateResponse.Links.Self.Href),
+					"href": types.StringPointerValue(webhookMerchantCreateResponse.Links.Self.Href),
 				}),
 				"test_webhook": types.ObjectValueMust(map[string]attr.Type{
 					"href": types.StringType,
 				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookCreateResponse.Links.Self.Href),
+					"href": types.StringPointerValue(webhookMerchantCreateResponse.Links.Self.Href),
 				}),
 			}),
 		Password: types.StringPointerValue(createMerchantWebhookRequest.Password), //FIXME: figure out how to hide this / or if not needed to hide
@@ -371,7 +371,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		}),
 	}
 
-	// Set state with the fully populated webhookCreateRequest
+	// Set state with the fully populated webhookMerchantCreateRequest
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -393,7 +393,7 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 		data = r.client.Management().WebhooksMerchantLevelApi.GetWebhookInput(r.client.GetConfig().MerchantAccount, state.WebhooksMerchant.ID.ValueString())
 	}
 
-	webhookMerchantData, _, err := r.client.Management().WebhooksMerchantLevelApi.GetWebhook(ctx, data)
+	webhookMerchantGetRequest, _, err := r.client.Management().WebhooksMerchantLevelApi.GetWebhook(ctx, data)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Adyen Webhooks",
@@ -403,38 +403,38 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	includeEventCodes := []attr.Value{}
-	for _, code := range webhookMerchantData.AdditionalSettings.IncludeEventCodes {
+	for _, code := range webhookMerchantGetRequest.AdditionalSettings.IncludeEventCodes {
 		includeEventCodes = append(includeEventCodes, types.StringValue(code))
 	}
 
 	excludeEventCodes := []attr.Value{}
-	for _, code := range webhookMerchantData.AdditionalSettings.ExcludeEventCodes {
+	for _, code := range webhookMerchantGetRequest.AdditionalSettings.ExcludeEventCodes {
 		excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
 	}
 
 	properties := make(map[string]attr.Value)
-	if webhookMerchantData.AdditionalSettings.Properties != nil {
-		for k, v := range *webhookMerchantData.AdditionalSettings.Properties {
+	if webhookMerchantGetRequest.AdditionalSettings.Properties != nil {
+		for k, v := range *webhookMerchantGetRequest.AdditionalSettings.Properties {
 			properties[k] = types.BoolValue(v)
 		}
 	}
 
 	state = webhooksMerchantResourceModel{
 		webhooksMerchantModel{
-			ID:                              types.StringPointerValue(webhookMerchantData.Id),
-			Type:                            types.StringValue(webhookMerchantData.Type),
-			URL:                             types.StringValue(webhookMerchantData.Url),
-			Username:                        types.StringPointerValue(webhookMerchantData.Username),
-			HasPassword:                     types.BoolPointerValue(webhookMerchantData.HasPassword),
-			Active:                          types.BoolValue(webhookMerchantData.Active),
-			HasError:                        types.BoolPointerValue(webhookMerchantData.HasError),
-			EncryptionProtocol:              types.StringPointerValue(webhookMerchantData.EncryptionProtocol),
-			CommunicationFormat:             types.StringValue(webhookMerchantData.CommunicationFormat),
-			AcceptsExpiredCertificate:       types.BoolPointerValue(webhookMerchantData.AcceptsExpiredCertificate),
-			AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookMerchantData.AcceptsSelfSignedCertificate),
-			AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantData.AcceptsUntrustedRootCertificate),
-			PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantData.PopulateSoapActionHeader),
-			CertificateAlias:                types.StringPointerValue(webhookMerchantData.CertificateAlias),
+			ID:                              types.StringPointerValue(webhookMerchantGetRequest.Id),
+			Type:                            types.StringValue(webhookMerchantGetRequest.Type),
+			URL:                             types.StringValue(webhookMerchantGetRequest.Url),
+			Username:                        types.StringPointerValue(webhookMerchantGetRequest.Username),
+			HasPassword:                     types.BoolPointerValue(webhookMerchantGetRequest.HasPassword),
+			Active:                          types.BoolValue(webhookMerchantGetRequest.Active),
+			HasError:                        types.BoolPointerValue(webhookMerchantGetRequest.HasError),
+			EncryptionProtocol:              types.StringPointerValue(webhookMerchantGetRequest.EncryptionProtocol),
+			CommunicationFormat:             types.StringValue(webhookMerchantGetRequest.CommunicationFormat),
+			AcceptsExpiredCertificate:       types.BoolPointerValue(webhookMerchantGetRequest.AcceptsExpiredCertificate),
+			AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookMerchantGetRequest.AcceptsSelfSignedCertificate),
+			AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantGetRequest.AcceptsUntrustedRootCertificate),
+			PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantGetRequest.PopulateSoapActionHeader),
+			CertificateAlias:                types.StringPointerValue(webhookMerchantGetRequest.CertificateAlias),
 			Links: types.ObjectValueMust(
 				map[string]attr.Type{
 					"self": types.ObjectType{
@@ -461,22 +461,22 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 					"self": types.ObjectValueMust(map[string]attr.Type{
 						"href": types.StringType,
 					}, map[string]attr.Value{
-						"href": types.StringPointerValue(webhookMerchantData.Links.Self.Href),
+						"href": types.StringPointerValue(webhookMerchantGetRequest.Links.Self.Href),
 					}),
 					"generate_hmac": types.ObjectValueMust(map[string]attr.Type{
 						"href": types.StringType,
 					}, map[string]attr.Value{
-						"href": types.StringPointerValue(webhookMerchantData.Links.Self.Href),
+						"href": types.StringPointerValue(webhookMerchantGetRequest.Links.Self.Href),
 					}),
 					"merchant": types.ObjectValueMust(map[string]attr.Type{
 						"href": types.StringType,
 					}, map[string]attr.Value{
-						"href": types.StringPointerValue(webhookMerchantData.Links.Self.Href),
+						"href": types.StringPointerValue(webhookMerchantGetRequest.Links.Self.Href),
 					}),
 					"test_webhook": types.ObjectValueMust(map[string]attr.Type{
 						"href": types.StringType,
 					}, map[string]attr.Value{
-						"href": types.StringPointerValue(webhookMerchantData.Links.Self.Href),
+						"href": types.StringPointerValue(webhookMerchantGetRequest.Links.Self.Href),
 					}),
 				}),
 			AdditionalSettings: types.ObjectValueMust(map[string]attr.Type{
@@ -533,15 +533,15 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Create a new webhook
-	webhookUpdateRequest := r.client.
+	webhookMerchantUpdateRequest := r.client.
 		Management().
 		WebhooksMerchantLevelApi.
 		UpdateWebhookInput(r.client.GetConfig().MerchantAccount, plan.WebhooksMerchant.ID.ValueString()).
 		UpdateMerchantWebhookRequest(*updateMerchantWebhookRequest)
-	webhookUpdateResponse, _, err := r.client.
+	webhookMerchantUpdateResponse, _, err := r.client.
 		Management().
 		WebhooksMerchantLevelApi.
-		UpdateWebhook(ctx, webhookUpdateRequest)
+		UpdateWebhook(ctx, webhookMerchantUpdateRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating merchant webhook",
@@ -551,38 +551,38 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	includeEventCodes := []attr.Value{}
-	for _, code := range webhookUpdateResponse.AdditionalSettings.IncludeEventCodes {
+	for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.IncludeEventCodes {
 		includeEventCodes = append(includeEventCodes, types.StringValue(code))
 	}
 
 	excludeEventCodes := []attr.Value{}
-	for _, code := range webhookUpdateResponse.AdditionalSettings.ExcludeEventCodes {
+	for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.ExcludeEventCodes {
 		excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
 	}
 
 	properties := make(map[string]attr.Value)
-	if webhookUpdateResponse.AdditionalSettings.Properties != nil {
-		for k, v := range *webhookUpdateResponse.AdditionalSettings.Properties {
+	if webhookMerchantUpdateResponse.AdditionalSettings.Properties != nil {
+		for k, v := range *webhookMerchantUpdateResponse.AdditionalSettings.Properties {
 			properties[k] = types.BoolValue(v)
 		}
 	}
 
 	// Map response body to schema and populate Computed attribute values
 	plan.WebhooksMerchant = webhooksMerchantModel{
-		ID:                              types.StringPointerValue(webhookUpdateResponse.Id),
-		Type:                            types.StringValue(webhookUpdateResponse.Type),
-		URL:                             types.StringValue(webhookUpdateResponse.Url),
-		Username:                        types.StringPointerValue(webhookUpdateResponse.Username),
-		HasPassword:                     types.BoolPointerValue(webhookUpdateResponse.HasPassword),
-		Active:                          types.BoolValue(webhookUpdateResponse.Active),
-		HasError:                        types.BoolPointerValue(webhookUpdateResponse.HasError),
-		EncryptionProtocol:              types.StringPointerValue(webhookUpdateResponse.EncryptionProtocol),
-		CommunicationFormat:             types.StringValue(webhookUpdateResponse.CommunicationFormat),
-		AcceptsExpiredCertificate:       types.BoolPointerValue(webhookUpdateResponse.AcceptsExpiredCertificate),
-		AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookUpdateResponse.AcceptsSelfSignedCertificate),
-		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookUpdateResponse.AcceptsUntrustedRootCertificate),
-		PopulateSoapActionHeader:        types.BoolPointerValue(webhookUpdateResponse.PopulateSoapActionHeader),
-		CertificateAlias:                types.StringPointerValue(webhookUpdateResponse.CertificateAlias),
+		ID:                              types.StringPointerValue(webhookMerchantUpdateResponse.Id),
+		Type:                            types.StringValue(webhookMerchantUpdateResponse.Type),
+		URL:                             types.StringValue(webhookMerchantUpdateResponse.Url),
+		Username:                        types.StringPointerValue(webhookMerchantUpdateResponse.Username),
+		HasPassword:                     types.BoolPointerValue(webhookMerchantUpdateResponse.HasPassword),
+		Active:                          types.BoolValue(webhookMerchantUpdateResponse.Active),
+		HasError:                        types.BoolPointerValue(webhookMerchantUpdateResponse.HasError),
+		EncryptionProtocol:              types.StringPointerValue(webhookMerchantUpdateResponse.EncryptionProtocol),
+		CommunicationFormat:             types.StringValue(webhookMerchantUpdateResponse.CommunicationFormat),
+		AcceptsExpiredCertificate:       types.BoolPointerValue(webhookMerchantUpdateResponse.AcceptsExpiredCertificate),
+		AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookMerchantUpdateResponse.AcceptsSelfSignedCertificate),
+		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantUpdateResponse.AcceptsUntrustedRootCertificate),
+		PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantUpdateResponse.PopulateSoapActionHeader),
+		CertificateAlias:                types.StringPointerValue(webhookMerchantUpdateResponse.CertificateAlias),
 		Password:                        types.StringPointerValue(updateMerchantWebhookRequest.Password),
 		Links: types.ObjectValueMust(
 			map[string]attr.Type{
@@ -610,22 +610,22 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 				"self": types.ObjectValueMust(map[string]attr.Type{
 					"href": types.StringType,
 				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookUpdateResponse.Links.Self.Href),
+					"href": types.StringPointerValue(webhookMerchantUpdateResponse.Links.Self.Href),
 				}),
 				"generate_hmac": types.ObjectValueMust(map[string]attr.Type{
 					"href": types.StringType,
 				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookUpdateResponse.Links.Self.Href),
+					"href": types.StringPointerValue(webhookMerchantUpdateResponse.Links.Self.Href),
 				}),
 				"merchant": types.ObjectValueMust(map[string]attr.Type{
 					"href": types.StringType,
 				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookUpdateResponse.Links.Self.Href),
+					"href": types.StringPointerValue(webhookMerchantUpdateResponse.Links.Self.Href),
 				}),
 				"test_webhook": types.ObjectValueMust(map[string]attr.Type{
 					"href": types.StringType,
 				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookUpdateResponse.Links.Self.Href),
+					"href": types.StringPointerValue(webhookMerchantUpdateResponse.Links.Self.Href),
 				}),
 			}),
 		AdditionalSettings: types.ObjectValueMust(map[string]attr.Type{
@@ -662,8 +662,8 @@ func (r *webhookMerchantResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	data := r.client.Management().WebhooksMerchantLevelApi.RemoveWebhookInput(r.client.GetConfig().MerchantAccount, state.WebhooksMerchant.ID.ValueString())
-	_, err := r.client.Management().WebhooksMerchantLevelApi.RemoveWebhook(ctx, data)
+	removeWebhookInput := r.client.Management().WebhooksMerchantLevelApi.RemoveWebhookInput(r.client.GetConfig().MerchantAccount, state.WebhooksMerchant.ID.ValueString())
+	_, err := r.client.Management().WebhooksMerchantLevelApi.RemoveWebhook(ctx, removeWebhookInput)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Webhooks Merchant",
