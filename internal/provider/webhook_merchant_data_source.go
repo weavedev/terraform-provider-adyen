@@ -36,45 +36,45 @@ type webhooksModel struct {
 }
 
 type webhookLinksModel struct {
-	First webhooksLinksHrefModel `tfsdk:"first"`
-	Last  webhooksLinksHrefModel `tfsdk:"last"`
-	Self  webhooksLinksHrefModel `tfsdk:"self"`
+	First webhooksLinksHrefDataModel `tfsdk:"first"`
+	Last  webhooksLinksHrefDataModel `tfsdk:"last"`
+	Self  webhooksLinksHrefDataModel `tfsdk:"self"`
 }
 
-type webhooksLinksHrefModel struct {
+type webhooksLinksHrefDataModel struct {
 	Href types.String `tfsdk:"href"`
 }
 
 type webhookDataModel struct {
-	ID                              types.String            `tfsdk:"id"`
-	Type                            types.String            `tfsdk:"type"`
-	URL                             types.String            `tfsdk:"url"`
-	Username                        types.String            `tfsdk:"username"`
-	Description                     types.String            `tfsdk:"description"`
-	HasPassword                     types.Bool              `tfsdk:"has_password"`
-	Active                          types.Bool              `tfsdk:"active"`
-	HasError                        types.Bool              `tfsdk:"has_error"`
-	EncryptionProtocol              types.String            `tfsdk:"encryption_protocol"`
-	CommunicationFormat             types.String            `tfsdk:"communication_format"`
-	AcceptsExpiredCertificate       types.Bool              `tfsdk:"accepts_expired_certificate"`
-	AcceptsSelfSignedCertificate    types.Bool              `tfsdk:"accepts_self_signed_certificate"`
-	AcceptsUntrustedRootCertificate types.Bool              `tfsdk:"accepts_untrusted_root_certificate"`
-	CertificateAlias                types.String            `tfsdk:"certificate_alias"`
-	PopulateSoapActionHeader        types.Bool              `tfsdk:"populate_soap_action_header"`
-	AdditionalSettings              webhookAdditionalModel  `tfsdk:"additional_settings"`
-	Links                           []webhookDataLinksModel `tfsdk:"links"`
+	ID                              types.String               `tfsdk:"id"`
+	Type                            types.String               `tfsdk:"type"`
+	URL                             types.String               `tfsdk:"url"`
+	Username                        types.String               `tfsdk:"username"`
+	Description                     types.String               `tfsdk:"description"`
+	HasPassword                     types.Bool                 `tfsdk:"has_password"`
+	Active                          types.Bool                 `tfsdk:"active"`
+	HasError                        types.Bool                 `tfsdk:"has_error"`
+	EncryptionProtocol              types.String               `tfsdk:"encryption_protocol"`
+	CommunicationFormat             types.String               `tfsdk:"communication_format"`
+	AcceptsExpiredCertificate       types.Bool                 `tfsdk:"accepts_expired_certificate"`
+	AcceptsSelfSignedCertificate    types.Bool                 `tfsdk:"accepts_self_signed_certificate"`
+	AcceptsUntrustedRootCertificate types.Bool                 `tfsdk:"accepts_untrusted_root_certificate"`
+	CertificateAlias                types.String               `tfsdk:"certificate_alias"`
+	PopulateSoapActionHeader        types.Bool                 `tfsdk:"populate_soap_action_header"`
+	AdditionalSettings              webhookAdditionalDataModel `tfsdk:"additional_settings"`
+	Links                           []webhookLinksDataModel    `tfsdk:"links"`
 }
 
-type webhookAdditionalModel struct {
+type webhookAdditionalDataModel struct {
 	IncludeEventCodes []types.String `tfsdk:"include_event_codes"`
 	ExcludeEventCodes []types.String `tfsdk:"exclude_event_codes"`
 }
 
-type webhookDataLinksModel struct {
-	Self         webhooksLinksHrefModel `tfsdk:"self"`
-	GenerateHmac webhooksLinksHrefModel `tfsdk:"generate_hmac"`
-	Merchant     webhooksLinksHrefModel `tfsdk:"merchant"`
-	TestWebhook  webhooksLinksHrefModel `tfsdk:"test_webhook"`
+type webhookLinksDataModel struct {
+	Self         webhooksLinksHrefDataModel `tfsdk:"self"`
+	GenerateHmac webhooksLinksHrefDataModel `tfsdk:"generate_hmac"`
+	Merchant     webhooksLinksHrefDataModel `tfsdk:"merchant"`
+	TestWebhook  webhooksLinksHrefDataModel `tfsdk:"test_webhook"`
 }
 
 func NewWebhookMerchantDataSource() datasource.DataSource {
@@ -235,7 +235,7 @@ func (d *webhooksMerchantDataSource) Read(ctx context.Context, req datasource.Re
 
 		webhookState := webhooksModel{
 			Links: webhookLinksModel{
-				Self: webhooksLinksHrefModel{
+				Self: webhooksLinksHrefDataModel{
 					Href: types.StringValue(*links.Self.Href),
 				},
 			},
@@ -246,39 +246,39 @@ func (d *webhooksMerchantDataSource) Read(ctx context.Context, req datasource.Re
 
 		for _, webhookData := range listWebhooksMerchant.Data {
 			webhookState.Data = append(webhookState.Data, webhookDataModel{
-				ID:                              types.StringValue(*webhookData.Id),
+				ID:                              types.StringPointerValue(webhookData.Id),
 				Type:                            types.StringValue(webhookData.Type),
 				URL:                             types.StringValue(webhookData.Url),
-				Username:                        types.StringValue(*webhookData.Username),
-				Description:                     types.StringValue(*webhookData.Description),
-				HasPassword:                     types.BoolValue(*webhookData.HasPassword),
+				Username:                        types.StringPointerValue(webhookData.Username),
+				Description:                     types.StringPointerValue(webhookData.Description),
+				HasPassword:                     types.BoolPointerValue(webhookData.HasPassword),
 				Active:                          types.BoolValue(webhookData.Active),
-				HasError:                        types.BoolValue(*webhookData.HasError),
-				EncryptionProtocol:              types.StringValue(*webhookData.EncryptionProtocol),
+				HasError:                        types.BoolPointerValue(webhookData.HasError),
+				EncryptionProtocol:              types.StringPointerValue(webhookData.EncryptionProtocol),
 				CommunicationFormat:             types.StringValue(webhookData.CommunicationFormat),
-				AcceptsExpiredCertificate:       types.BoolValue(*webhookData.AcceptsExpiredCertificate),
-				AcceptsSelfSignedCertificate:    types.BoolValue(*webhookData.AcceptsSelfSignedCertificate),
-				AcceptsUntrustedRootCertificate: types.BoolValue(*webhookData.AcceptsUntrustedRootCertificate),
-				CertificateAlias:                types.StringValue(*webhookData.CertificateAlias),
-				PopulateSoapActionHeader:        types.BoolValue(*webhookData.PopulateSoapActionHeader),
+				AcceptsExpiredCertificate:       types.BoolPointerValue(webhookData.AcceptsExpiredCertificate),
+				AcceptsSelfSignedCertificate:    types.BoolPointerValue(webhookData.AcceptsSelfSignedCertificate),
+				AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookData.AcceptsUntrustedRootCertificate),
+				CertificateAlias:                types.StringPointerValue(webhookData.CertificateAlias),
+				PopulateSoapActionHeader:        types.BoolPointerValue(webhookData.PopulateSoapActionHeader),
 			})
 
 			for _, additionalSettings := range webhookState.Data {
-				webhookState.Data = append(webhookState.Data, webhookDataModel{AdditionalSettings: webhookAdditionalModel{
+				webhookState.Data = append(webhookState.Data, webhookDataModel{AdditionalSettings: webhookAdditionalDataModel{
 					IncludeEventCodes: additionalSettings.AdditionalSettings.IncludeEventCodes,
 					ExcludeEventCodes: additionalSettings.AdditionalSettings.ExcludeEventCodes,
 				}})
 			}
 
 			webhookState.Data = append(webhookState.Data, webhookDataModel{
-				Links: []webhookDataLinksModel{
+				Links: []webhookLinksDataModel{
 					{
-						Self: webhooksLinksHrefModel{
-							Href: types.StringValue(*links.Self.Href),
+						Self: webhooksLinksHrefDataModel{
+							Href: types.StringPointerValue(links.Self.Href),
 						},
-						GenerateHmac: webhooksLinksHrefModel{Href: types.StringValue(*links.GenerateHmac.Href)},
-						Merchant:     webhooksLinksHrefModel{Href: types.StringValue(*links.Merchant.Href)},
-						TestWebhook:  webhooksLinksHrefModel{Href: types.StringValue(*links.TestWebhook.Href)},
+						GenerateHmac: webhooksLinksHrefDataModel{Href: types.StringPointerValue(links.GenerateHmac.Href)},
+						Merchant:     webhooksLinksHrefDataModel{Href: types.StringPointerValue(links.Merchant.Href)},
+						TestWebhook:  webhooksLinksHrefDataModel{Href: types.StringPointerValue(links.TestWebhook.Href)},
 					},
 				},
 			})
