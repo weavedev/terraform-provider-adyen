@@ -274,13 +274,17 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	var includeEventCodes []attr.Value
-	for _, code := range webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes {
-		includeEventCodes = append(includeEventCodes, types.StringValue(code))
+	if len(webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes) > 0 {
+		for _, code := range webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes {
+			includeEventCodes = append(includeEventCodes, types.StringValue(code))
+		}
 	}
 
 	var excludeEventCodes []attr.Value
-	for _, code := range webhookMerchantCreateResponse.AdditionalSettings.ExcludeEventCodes {
-		excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
+	if len(webhookMerchantCreateResponse.AdditionalSettings.ExcludeEventCodes) > 0 {
+		for _, code := range webhookMerchantCreateResponse.AdditionalSettings.ExcludeEventCodes {
+			excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
+		}
 	}
 
 	properties := make(map[string]attr.Value)
@@ -401,13 +405,17 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	var includeEventCodes []attr.Value
-	for _, code := range webhookMerchantGetRequest.AdditionalSettings.IncludeEventCodes {
-		includeEventCodes = append(includeEventCodes, types.StringValue(code))
+	if len(webhookMerchantGetRequest.AdditionalSettings.IncludeEventCodes) > 0 {
+		for _, code := range webhookMerchantGetRequest.AdditionalSettings.IncludeEventCodes {
+			includeEventCodes = append(includeEventCodes, types.StringValue(code))
+		}
 	}
 
 	var excludeEventCodes []attr.Value
-	for _, code := range webhookMerchantGetRequest.AdditionalSettings.ExcludeEventCodes {
-		excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
+	if len(webhookMerchantGetRequest.AdditionalSettings.ExcludeEventCodes) > 0 {
+		for _, code := range webhookMerchantGetRequest.AdditionalSettings.ExcludeEventCodes {
+			excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
+		}
 	}
 
 	properties := make(map[string]attr.Value)
@@ -549,13 +557,17 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	var includeEventCodes []attr.Value
-	for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.IncludeEventCodes {
-		includeEventCodes = append(includeEventCodes, types.StringValue(code))
+	if len(webhookMerchantUpdateResponse.AdditionalSettings.IncludeEventCodes) > 0 {
+		for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.IncludeEventCodes {
+			includeEventCodes = append(includeEventCodes, types.StringValue(code))
+		}
 	}
 
 	var excludeEventCodes []attr.Value
-	for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.ExcludeEventCodes {
-		excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
+	if len(webhookMerchantUpdateResponse.AdditionalSettings.ExcludeEventCodes) > 0 {
+		for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.ExcludeEventCodes {
+			excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
+		}
 	}
 
 	properties := make(map[string]attr.Value)
@@ -581,7 +593,7 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantUpdateResponse.AcceptsUntrustedRootCertificate),
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantUpdateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookMerchantUpdateResponse.CertificateAlias),
-		Password:                        types.StringPointerValue(updateMerchantWebhookRequest.Password),
+		Password:                        types.StringPointerValue(updateMerchantWebhookRequest.Password), //FIXME
 		Links: types.ObjectValueMust(
 			map[string]attr.Type{
 				"self": types.ObjectType{
