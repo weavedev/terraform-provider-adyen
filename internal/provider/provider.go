@@ -58,18 +58,18 @@ func (p *adyenProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 				MarkdownDescription: "The API Key for the Adyen API Client.",
 			},
 			"environment": schema.StringAttribute{
-				MarkdownDescription: "The Development Environment for the Adyen API Client.", //TODO: list options
+				MarkdownDescription: "The Development Environment for the Adyen API Client. Can be either 'live' or 'test'.",
 				Required:            true,
 			},
 			"merchant_account": schema.StringAttribute{
 				Required:            true,
 				Sensitive:           true,
-				MarkdownDescription: "The Merchant Account for the Adyen API Client.",
+				MarkdownDescription: "The Merchant Account ID for the Adyen API Client.",
 			},
 			"company_account": schema.StringAttribute{
-				Optional:            true,
+				Required:            true,
 				Sensitive:           true,
-				MarkdownDescription: "The Company Account for the Adyen API Client.",
+				MarkdownDescription: "The Company Account ID for the Adyen API Client.",
 			},
 		},
 	}
