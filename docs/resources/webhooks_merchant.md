@@ -17,7 +17,9 @@ description: |-
 
 ### Required
 
-- `webhooks_merchant` (Attributes) Subscribe to receive webhook notifications about events related to your merchant account. You can add basic authentication to make sure the data is secure.
+- `webhooks_merchant` (Attributes) Subscribe to receive webhook notifications about events related to your merchant account.
+
+You can add basic authentication to make sure the data is secure.
 
 To make this request, your API credential must have the following roles:
 

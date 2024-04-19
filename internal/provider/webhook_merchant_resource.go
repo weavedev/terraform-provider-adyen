@@ -88,7 +88,7 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"webhooks_merchant": schema.SingleNestedAttribute{
-				Description: "Subscribe to receive webhook notifications about events related to your merchant account. " +
+				Description: "Subscribe to receive webhook notifications about events related to your merchant account.\n\n" +
 					"You can add basic authentication to make sure the data is secure.\n\n" +
 					"To make this request, your API credential must have the following roles:\n\nManagement API—Webhooks read and write",
 				Required: true,
