@@ -137,7 +137,7 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 						Optional: true,
 						Computed: true,
 						Description: "SSL version to access the public webhook URL specified in the url field. " +
-							"Possible values:\n\nTLSv1.3\nTLSv1.2\nHTTP - Only allowed on Test environment.\n" +
+							"Possible values:\n\nTLSv1.3\nTLSv1.2\n & HTTP. HTTP is Only allowed on Test environment.\n" +
 							"If not specified, the webhook will use sslVersion: TLSv1.2.",
 					},
 					"has_error": schema.BoolAttribute{
