@@ -82,6 +82,7 @@ func (r *webhookMerchantResource) Metadata(_ context.Context, req resource.Metad
 	resp.TypeName = req.ProviderTypeName + "_webhooks_merchant"
 }
 
+// Schema defines the schema for the resource.
 func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
