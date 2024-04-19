@@ -57,12 +57,6 @@ type webhooksMerchantModel struct {
 	AdditionalSettings              types.Object `tfsdk:"additional_settings"`
 }
 
-type webhooksMerchantAdditionalSettingsModel struct {
-	IncludeEventCodes []types.String `tfsdk:"include_event_codes"`
-	ExcludeEventCodes []types.String `tfsdk:"exclude_event_codes"`
-	Properties        types.Map      `tfsdk:"properties"`
-}
-
 //FIXME: running 2nd apply should check if changes were made, currently failing
 
 // Configure adds the provider configured client to the resource.
