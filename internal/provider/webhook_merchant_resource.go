@@ -15,8 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-//TODO: check for more consistent naming of vars.
-
 // Ensure the implementation satisfies the expected interfaces.
 var (
 	_ resource.Resource              = &webhookMerchantResource{}
