@@ -38,7 +38,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "hashicorp.com/edu/adyen",
+		Address: "hashicorp.com/edu/adyen", //TODO: change to registry.terraform.io/weave/adyen
 		Debug:   debug,
 	}
 

@@ -274,6 +274,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
+	//TODO: make generic functions for these 3 vars
 	var includeEventCodes []attr.Value
 	if len(webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes) > 0 {
 		for _, code := range webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes {
@@ -312,6 +313,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantCreateResponse.AcceptsUntrustedRootCertificate),
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantCreateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookMerchantCreateResponse.CertificateAlias),
+		//TODO: make generic function for Links & AdditionalSettings
 		Links: types.ObjectValueMust(
 			map[string]attr.Type{
 				"self": types.ObjectType{
@@ -397,8 +399,9 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	webhookMerchantGetRequest, _, err := r.client.Management().WebhooksMerchantLevelApi.GetWebhook(ctx, data)
-	if err != nil {
-		resp.Diagnostics.AddError(
+	_, ok := webhookMerchantGetRequest.GetIdOk()
+	if !ok && state.WebhooksMerchant.ID.ValueString() != "" {
+		resp.Diagnostics.AddWarning(
 			"Unable to Read Adyen Webhooks",
 			err.Error(),
 		)
