@@ -34,16 +34,38 @@ Required:
 - `accepts_self_signed_certificate` (Boolean) Indicates if self-signed SSL certificates are accepted. Default value: false.
 - `accepts_untrusted_root_certificate` (Boolean) Indicates if untrusted SSL certificates are accepted. Default value: false.
 - `active` (Boolean) Indicates if the webhook configuration is active. The field must be 'true' for Adyen to send webhooks about events related an account.
-- `communication_format` (String) Format or protocol for receiving webhooks. Possible values: soap, http, json.
+- `communication_format` (String) Format or protocol for receiving webhooks. Possible values:
+
+soap
+http
+json
 - `password` (String, Sensitive) The password required for basic authentication.
-- `type` (String) The type of webhook. Possible values are: standard, account-settings-notification, banktransfer-notification, boletobancario-notification, directdebit-notification, ach-notification-of-change-notification, pending-notification, ideal-notification, ideal-pending-notification, report-notification, terminal-api-notification
+- `type` (String) The type of webhook that is being created. Possible values are:
+
+standard
+account-settings-notification
+banktransfer-notification
+boletobancario-notification
+directdebit-notification
+ach-notification-of-change-notification
+pending-notification
+ideal-notification
+ideal-pending-notification
+report-notification
+rreq-notification
+Find out more about standard notification webhooks and other types of notifications.
 - `url` (String) Public URL where webhooks will be sent, for example https://www.domain.com/webhook-endpoint.
 - `username` (String) Username to access the webhook URL.
 
 Optional:
 
 - `certificate_alias` (String) The alias of Adyen SSL certificate. When you receive a notification from Adyen, the alias from the HMAC signature will match this alias.
-- `encryption_protocol` (String) SSL version to access the public webhook URL specified in the url field. Possible values: TLSv1.3, TLSv1.2, HTTP - Only allowed on Test environment.If not specified, the webhook will use sslVersion: TLSv1.2.
+- `encryption_protocol` (String) SSL version to access the public webhook URL specified in the url field. Possible values:
+
+TLSv1.3
+TLSv1.2
+HTTP - Only allowed on Test environment.
+If not specified, the webhook will use sslVersion: TLSv1.2.
 - `populate_soap_action_header` (Boolean) Indicates if the SOAP action header needs to be populated. Default value: false. Only applies if communicationFormat: soap.
 
 Read-Only:

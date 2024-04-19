@@ -99,9 +99,10 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"type": schema.StringAttribute{
 						Required: true,
-						Description: "The type of webhook. Possible values are: standard, account-settings-notification, banktransfer-notification, " +
-							"boletobancario-notification, directdebit-notification, ach-notification-of-change-notification, " +
-							"pending-notification, ideal-notification, ideal-pending-notification, report-notification, terminal-api-notification",
+						Description: "The type of webhook that is being created. Possible values are:\n\nstandard\naccount-settings-notification\n" +
+							"banktransfer-notification\nboletobancario-notification\ndirectdebit-notification\nach-notification-of-change-notification\n" +
+							"pending-notification\nideal-notification\nideal-pending-notification\nreport-notification\nrreq-notification\n" +
+							"Find out more about standard notification webhooks and other types of notifications.",
 					},
 					"url": schema.StringAttribute{
 						Required:    true,
@@ -126,7 +127,7 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"communication_format": schema.StringAttribute{
 						Required:    true,
-						Description: "Format or protocol for receiving webhooks. Possible values: soap, http, json.",
+						Description: "Format or protocol for receiving webhooks. Possible values:\n\nsoap\nhttp\njson",
 					},
 					"description": schema.StringAttribute{
 						Computed:    true,
@@ -135,8 +136,9 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					"encryption_protocol": schema.StringAttribute{
 						Optional: true,
 						Computed: true,
-						Description: "SSL version to access the public webhook URL specified in the url field. Possible values: TLSv1.3, TLSv1.2, HTTP - " +
-							"Only allowed on Test environment.If not specified, the webhook will use sslVersion: TLSv1.2.",
+						Description: "SSL version to access the public webhook URL specified in the url field. " +
+							"Possible values:\n\nTLSv1.3\nTLSv1.2\nHTTP - Only allowed on Test environment.\n" +
+							"If not specified, the webhook will use sslVersion: TLSv1.2.",
 					},
 					"has_error": schema.BoolAttribute{
 						Computed:    true,
