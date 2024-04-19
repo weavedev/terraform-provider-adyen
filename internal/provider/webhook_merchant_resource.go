@@ -398,13 +398,11 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 		data = r.client.Management().WebhooksMerchantLevelApi.GetWebhookInput(r.client.GetConfig().MerchantAccount, state.WebhooksMerchant.ID.ValueString())
 	}
 
-	webhookMerchantGetRequest, _, err := r.client.Management().WebhooksMerchantLevelApi.GetWebhook(ctx, data)
+	webhookMerchantGetRequest, _, _ := r.client.Management().WebhooksMerchantLevelApi.GetWebhook(ctx, data)
 	_, ok := webhookMerchantGetRequest.GetIdOk()
+	//TODO: check this state logic once over to check edgecases
 	if !ok && state.WebhooksMerchant.ID.ValueString() != "" {
-		resp.Diagnostics.AddWarning(
-			"Unable to Read Adyen Webhooks",
-			err.Error(),
-		)
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
