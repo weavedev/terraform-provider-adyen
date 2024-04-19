@@ -400,12 +400,12 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	includeEventCodes := []attr.Value{}
+	var includeEventCodes []attr.Value
 	for _, code := range webhookMerchantGetRequest.AdditionalSettings.IncludeEventCodes {
 		includeEventCodes = append(includeEventCodes, types.StringValue(code))
 	}
 
-	excludeEventCodes := []attr.Value{}
+	var excludeEventCodes []attr.Value
 	for _, code := range webhookMerchantGetRequest.AdditionalSettings.ExcludeEventCodes {
 		excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
 	}
@@ -548,12 +548,12 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	includeEventCodes := []attr.Value{}
+	var includeEventCodes []attr.Value
 	for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.IncludeEventCodes {
 		includeEventCodes = append(includeEventCodes, types.StringValue(code))
 	}
 
-	excludeEventCodes := []attr.Value{}
+	var excludeEventCodes []attr.Value
 	for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.ExcludeEventCodes {
 		excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
 	}
