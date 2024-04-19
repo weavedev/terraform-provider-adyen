@@ -18,9 +18,6 @@ description: |-
 ### Required
 
 - `api_key` (String, Sensitive) The API Key for the Adyen API Client.
-- `environment` (String) The Development Environment for the Adyen API Client.
-- `merchant_account` (String, Sensitive) The Merchant Account for the Adyen API Client.
-
-### Optional
-
-- `company_account` (String, Sensitive) The Company Account for the Adyen API Client.
+- `company_account` (String, Sensitive) The Company Account ID for the Adyen API Client.
+- `environment` (String) The Development Environment for the Adyen API Client. Can be either 'live' or 'test'.
+- `merchant_account` (String, Sensitive) The Merchant Account ID for the Adyen API Client.
