@@ -88,24 +88,28 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"webhooks_merchant": schema.SingleNestedAttribute{
-				Description: "Manages a webhook on merchant level.",
-				Required:    true,
+				Description: "Subscribe to receive webhook notifications about events related to your merchant account. " +
+					"You can add basic authentication to make sure the data is secure.\n\n" +
+					"To make this request, your API credential must have the following roles:\n\nManagement API—Webhooks read and write",
+				Required: true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Computed:    true,
-						Description: "The unique identifier for the webhook.",
+						Description: "Unique identifier for this webhook.",
 					},
 					"type": schema.StringAttribute{
-						Required:    true,
-						Description: "The type of the webhook.", //TODO: list options
+						Required: true,
+						Description: "The type of webhook. Possible values are: standard, account-settings-notification, banktransfer-notification, " +
+							"boletobancario-notification, directdebit-notification, ach-notification-of-change-notification, " +
+							"pending-notification, ideal-notification, ideal-pending-notification, report-notification, terminal-api-notification",
 					},
 					"url": schema.StringAttribute{
 						Required:    true,
-						Description: "The URL the webhook will send requests to.",
+						Description: "Public URL where webhooks will be sent, for example https://www.domain.com/webhook-endpoint.",
 					},
 					"username": schema.StringAttribute{
 						Required:    true,
-						Description: "The username required for basic authentication.",
+						Description: "Username to access the webhook URL.",
 					},
 					"password": schema.StringAttribute{
 						Required:    true,
@@ -114,49 +118,50 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"has_password": schema.BoolAttribute{
 						Computed:    true,
-						Description: "Indicates if the webhook is configured with a password.",
+						Description: "Indicates if the webhook is password protected.",
 					},
 					"active": schema.BoolAttribute{
 						Required:    true,
-						Description: "Indicates if the webhook is active.",
+						Description: "Indicates if the webhook configuration is active. The field must be 'true' for Adyen to send webhooks about events related an account.",
 					},
 					"communication_format": schema.StringAttribute{
 						Required:    true,
-						Description: "The format of the communication (e.g., 'json').", //TODO: list options
+						Description: "Format or protocol for receiving webhooks. Possible values: soap, http, json.",
 					},
 					"description": schema.StringAttribute{
 						Computed:    true,
-						Description: "A description of the webhook.",
+						Description: "Your description for this webhook configuration.",
 					},
 					"encryption_protocol": schema.StringAttribute{
-						Optional:    true,
-						Computed:    true,
-						Description: "The encryption protocol used by the webhook.",
+						Optional: true,
+						Computed: true,
+						Description: "SSL version to access the public webhook URL specified in the url field. Possible values: TLSv1.3, TLSv1.2, HTTP - " +
+							"Only allowed on Test environment.If not specified, the webhook will use sslVersion: TLSv1.2.",
 					},
 					"has_error": schema.BoolAttribute{
 						Computed:    true,
-						Description: "Indicates if there is an error with the webhook.",
+						Description: "Indicates if the webhook configuration has errors that need troubleshooting. If the value is true, troubleshoot the configuration using the testing endpoint.",
 					},
 					"certificate_alias": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
-						Description: "The alias of the certificate.",
+						Description: "The alias of Adyen SSL certificate. When you receive a notification from Adyen, the alias from the HMAC signature will match this alias.",
 					},
 					"populate_soap_action_header": schema.BoolAttribute{
 						Optional:    true,
-						Description: "Indicates if the SOAP action header should be populated.",
+						Description: "Indicates if the SOAP action header needs to be populated. Default value: false. Only applies if communicationFormat: soap.",
 					},
 					"accepts_expired_certificate": schema.BoolAttribute{
 						Required:    true,
-						Description: "Indicates if expired certificates are accepted.",
+						Description: "Indicates if expired SSL certificates are accepted. Default value: false.",
 					},
 					"accepts_self_signed_certificate": schema.BoolAttribute{
 						Required:    true,
-						Description: "Indicates if self-signed certificates are accepted.",
+						Description: "Indicates if self-signed SSL certificates are accepted. Default value: false.",
 					},
 					"accepts_untrusted_root_certificate": schema.BoolAttribute{
 						Required:    true,
-						Description: "Indicates if untrusted root certificates are accepted.",
+						Description: "Indicates if untrusted SSL certificates are accepted. Default value: false.",
 					},
 					"links": schema.SingleNestedAttribute{
 						Computed: true,
@@ -192,19 +197,26 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 						},
 					},
 					"additional_settings": schema.SingleNestedAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Additional shopper and transaction information to be included in your standard notifications.",
 						Attributes: map[string]schema.Attribute{
 							"properties": schema.MapAttribute{
 								Computed:    true,
 								ElementType: types.BoolType,
+								Description: "Object containing boolean key-value pairs. " +
+									"The key can be any standard webhook additional setting, and the value indicates if the setting is enabled. " +
+									"For example, captureDelayHours: true means the standard notifications you get will contain the " +
+									"number of hours remaining until the payment will be captured.",
 							},
 							"include_event_codes": schema.ListAttribute{
 								Computed:    true,
 								ElementType: types.StringType,
+								Description: "Object containing list of event codes for which the notification will be sent.",
 							},
 							"exclude_event_codes": schema.ListAttribute{
 								Computed:    true,
 								ElementType: types.StringType,
+								Description: "Object containing list of event codes for which the notification will NOT be sent.",
 							},
 						},
 					},

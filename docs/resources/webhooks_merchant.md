@@ -17,36 +17,40 @@ description: |-
 
 ### Required
 
-- `webhooks_merchant` (Attributes) Manages a webhook on merchant level. (see [below for nested schema](#nestedatt--webhooks_merchant))
+- `webhooks_merchant` (Attributes) Subscribe to receive webhook notifications about events related to your merchant account. You can add basic authentication to make sure the data is secure.
+
+To make this request, your API credential must have the following roles:
+
+Management API—Webhooks read and write (see [below for nested schema](#nestedatt--webhooks_merchant))
 
 <a id="nestedatt--webhooks_merchant"></a>
 ### Nested Schema for `webhooks_merchant`
 
 Required:
 
-- `accepts_expired_certificate` (Boolean) Indicates if expired certificates are accepted.
-- `accepts_self_signed_certificate` (Boolean) Indicates if self-signed certificates are accepted.
-- `accepts_untrusted_root_certificate` (Boolean) Indicates if untrusted root certificates are accepted.
-- `active` (Boolean) Indicates if the webhook is active.
-- `communication_format` (String) The format of the communication (e.g., 'json').
+- `accepts_expired_certificate` (Boolean) Indicates if expired SSL certificates are accepted. Default value: false.
+- `accepts_self_signed_certificate` (Boolean) Indicates if self-signed SSL certificates are accepted. Default value: false.
+- `accepts_untrusted_root_certificate` (Boolean) Indicates if untrusted SSL certificates are accepted. Default value: false.
+- `active` (Boolean) Indicates if the webhook configuration is active. The field must be 'true' for Adyen to send webhooks about events related an account.
+- `communication_format` (String) Format or protocol for receiving webhooks. Possible values: soap, http, json.
 - `password` (String, Sensitive) The password required for basic authentication.
-- `type` (String) The type of the webhook.
-- `url` (String) The URL the webhook will send requests to.
-- `username` (String) The username required for basic authentication.
+- `type` (String) The type of webhook. Possible values are: standard, account-settings-notification, banktransfer-notification, boletobancario-notification, directdebit-notification, ach-notification-of-change-notification, pending-notification, ideal-notification, ideal-pending-notification, report-notification, terminal-api-notification
+- `url` (String) Public URL where webhooks will be sent, for example https://www.domain.com/webhook-endpoint.
+- `username` (String) Username to access the webhook URL.
 
 Optional:
 
-- `certificate_alias` (String) The alias of the certificate.
-- `encryption_protocol` (String) The encryption protocol used by the webhook.
-- `populate_soap_action_header` (Boolean) Indicates if the SOAP action header should be populated.
+- `certificate_alias` (String) The alias of Adyen SSL certificate. When you receive a notification from Adyen, the alias from the HMAC signature will match this alias.
+- `encryption_protocol` (String) SSL version to access the public webhook URL specified in the url field. Possible values: TLSv1.3, TLSv1.2, HTTP - Only allowed on Test environment.If not specified, the webhook will use sslVersion: TLSv1.2.
+- `populate_soap_action_header` (Boolean) Indicates if the SOAP action header needs to be populated. Default value: false. Only applies if communicationFormat: soap.
 
 Read-Only:
 
-- `additional_settings` (Attributes) (see [below for nested schema](#nestedatt--webhooks_merchant--additional_settings))
-- `description` (String) A description of the webhook.
-- `has_error` (Boolean) Indicates if there is an error with the webhook.
-- `has_password` (Boolean) Indicates if the webhook is configured with a password.
-- `id` (String) The unique identifier for the webhook.
+- `additional_settings` (Attributes) Additional shopper and transaction information to be included in your standard notifications. (see [below for nested schema](#nestedatt--webhooks_merchant--additional_settings))
+- `description` (String) Your description for this webhook configuration.
+- `has_error` (Boolean) Indicates if the webhook configuration has errors that need troubleshooting. If the value is true, troubleshoot the configuration using the testing endpoint.
+- `has_password` (Boolean) Indicates if the webhook is password protected.
+- `id` (String) Unique identifier for this webhook.
 - `links` (Attributes) (see [below for nested schema](#nestedatt--webhooks_merchant--links))
 
 <a id="nestedatt--webhooks_merchant--additional_settings"></a>
@@ -54,9 +58,9 @@ Read-Only:
 
 Read-Only:
 
-- `exclude_event_codes` (List of String)
-- `include_event_codes` (List of String)
-- `properties` (Map of Boolean)
+- `exclude_event_codes` (List of String) Object containing list of event codes for which the notification will NOT be sent.
+- `include_event_codes` (List of String) Object containing list of event codes for which the notification will be sent.
+- `properties` (Map of Boolean) Object containing boolean key-value pairs. The key can be any standard webhook additional setting, and the value indicates if the setting is enabled. For example, captureDelayHours: true means the standard notifications you get will contain the number of hours remaining until the payment will be captured.
 
 
 <a id="nestedatt--webhooks_merchant--links"></a>
