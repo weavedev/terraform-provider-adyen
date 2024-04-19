@@ -42,7 +42,60 @@ Optional:
 
 Read-Only:
 
+- `additional_settings` (Attributes) (see [below for nested schema](#nestedatt--webhooks_merchant--additional_settings))
 - `description` (String) A description of the webhook.
 - `has_error` (Boolean) Indicates if there is an error with the webhook.
 - `has_password` (Boolean) Indicates if the webhook is configured with a password.
 - `id` (String) The unique identifier for the webhook.
+- `links` (Attributes) (see [below for nested schema](#nestedatt--webhooks_merchant--links))
+
+<a id="nestedatt--webhooks_merchant--additional_settings"></a>
+### Nested Schema for `webhooks_merchant.additional_settings`
+
+Read-Only:
+
+- `exclude_event_codes` (List of String)
+- `include_event_codes` (List of String)
+- `properties` (Map of Boolean)
+
+
+<a id="nestedatt--webhooks_merchant--links"></a>
+### Nested Schema for `webhooks_merchant.links`
+
+Read-Only:
+
+- `generate_hmac` (Attributes) The API URL to generate an HMAC key for the webhook. (see [below for nested schema](#nestedatt--webhooks_merchant--links--generate_hmac))
+- `merchant` (Attributes) The API URL to the merchant account associated with the webhook. (see [below for nested schema](#nestedatt--webhooks_merchant--links--merchant))
+- `self` (Attributes) The API URL to the webhook itself. (see [below for nested schema](#nestedatt--webhooks_merchant--links--self))
+- `test_webhook` (Attributes) The API URL to test the webhook. (see [below for nested schema](#nestedatt--webhooks_merchant--links--test_webhook))
+
+<a id="nestedatt--webhooks_merchant--links--generate_hmac"></a>
+### Nested Schema for `webhooks_merchant.links.generate_hmac`
+
+Read-Only:
+
+- `href` (String)
+
+
+<a id="nestedatt--webhooks_merchant--links--merchant"></a>
+### Nested Schema for `webhooks_merchant.links.merchant`
+
+Read-Only:
+
+- `href` (String)
+
+
+<a id="nestedatt--webhooks_merchant--links--self"></a>
+### Nested Schema for `webhooks_merchant.links.self`
+
+Read-Only:
+
+- `href` (String)
+
+
+<a id="nestedatt--webhooks_merchant--links--test_webhook"></a>
+### Nested Schema for `webhooks_merchant.links.test_webhook`
+
+Read-Only:
+
+- `href` (String)
