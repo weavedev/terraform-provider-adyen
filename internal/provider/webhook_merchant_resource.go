@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -57,8 +59,6 @@ type webhooksMerchantModel struct {
 	AdditionalSettings              types.Object `tfsdk:"additional_settings"`
 }
 
-//FIXME: running 2nd apply should check if changes were made, currently failing
-
 // Configure adds the provider configured client to the resource.
 func (r *webhookMerchantResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
@@ -96,6 +96,9 @@ func (r *webhookMerchantResource) Schema(ctx context.Context, req resource.Schem
 					"id": schema.StringAttribute{
 						Computed:    true,
 						Description: "Unique identifier for this webhook.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(), // Required to use this when it is known that an unconfigured value will remain the same after a resource update.
+						},
 					},
 					"type": schema.StringAttribute{
 						Required: true,
