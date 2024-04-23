@@ -22,8 +22,8 @@ func testAccCheckAdyenWebhookMerchantDestroy(tfstate *terraform.State) error {
 		if rs.Type == "adyen_webhooks_merchant" && ok {
 			data := client.Management().WebhooksMerchantLevelApi.GetWebhookInput(client.GetConfig().MerchantAccount, value)
 			_, resp, err := client.Management().WebhooksMerchantLevelApi.GetWebhook(context.Background(), data)
-			if resp.StatusCode == 204 { // 204 No Content error code from Adyen if resource does not exist.
-				fmt.Printf("adyen_webhooks_merchant with id: '%s' has been removed\n", value)
+			if resp.StatusCode == 422 { // 422 Unprocessable Entity error code from Adyen if resource does not exist.
+				fmt.Printf("adyen_webhooks_merchant with id: '%s' does not exist and/or has been removed.\n", value)
 				continue
 			}
 			if err != nil {
