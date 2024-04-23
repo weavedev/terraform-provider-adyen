@@ -615,8 +615,8 @@ github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/ProtonMail/go-crypto v1.1.0-alpha.0 h1:nHGfwXmFvJrSR9xu8qL7BkO4DqTHXE9N5vPhgY2I+j0=
 github.com/ProtonMail/go-crypto v1.1.0-alpha.0/go.mod h1:rA3QumHc/FZ8pAHreoekgiAbzpNsfQAosU5td4SnOrE=
-github.com/adyen/adyen-go-api-library/v9 v9.1.0 h1:V+5CpWew5IXqRGM689WRgiPxnvXZlNfFs+dR0LWmGcI=
-github.com/adyen/adyen-go-api-library/v9 v9.1.0/go.mod h1:We5nvvDbk06MjY4RWhM0PYJn4SNyS6UmP8Rt1rGLmR4=
+github.com/adyen/adyen-go-api-library/v9 v9.3.0 h1:5kjJI3e3s0hD6/Vo0BeTSV/WB2Vs0uo/iXSWX4ZJguU=
+github.com/adyen/adyen-go-api-library/v9 v9.3.0/go.mod h1:We5nvvDbk06MjY4RWhM0PYJn4SNyS6UmP8Rt1rGLmR4=
 github.com/agext/levenshtein v1.2.2 h1:0S/Yg6LYmFJ5stwQeRp6EeOcCbj7xiqQSdNelsXvaqE=
 github.com/agext/levenshtein v1.2.2/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/ajstarks/deck v0.0.0-20200831202436-30c9fc6549a9/go.mod h1:JynElWSGnm/4RlzPXRlREEwqTHAN3T56Bv2ITsFT3gY=
