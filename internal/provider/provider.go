@@ -222,7 +222,5 @@ func (p *adyenProvider) Resources(ctx context.Context) []func() resource.Resourc
 
 // DataSources defines the data sources implemented in the provider.
 func (p *adyenProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		NewWebhookMerchantDataSource,
-	}
+	return []func() datasource.DataSource{}
 }
