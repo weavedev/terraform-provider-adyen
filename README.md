@@ -7,6 +7,12 @@ This repository is a terraform provider for **Adyen**, containing:
 - A resources and a data sources can be found in (`internal/provider/`),
 - Examples can be found in (`examples/`) and generated documentation in (`docs/`),
 
+
+## Currently supported resources
+- [x] Webhook Merchant 
+- [ ] Webhook Company
+- [ ] More on the way...
+
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
