@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/adyen/adyen-go-api-library/v9/src/adyen"
 	"github.com/adyen/adyen-go-api-library/v9/src/common"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/suite"
 	"os"
@@ -18,8 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
-
-var testAccProviderWebhooksMerchant *schema.Provider
 
 type AcceptanceSuite struct {
 	suite.Suite

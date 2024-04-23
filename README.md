@@ -1,12 +1,11 @@
-# Terraform Provider Scaffolding (Terraform Plugin Framework)
+# Terraform Provider Adyen
 
-_This template repository is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). The template repository built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk) can be found at [terraform-provider-scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding). See [Which SDK Should I Use?](https://developer.hashicorp.com/terraform/plugin/framework-benefits) in the Terraform documentation for additional information._
+This repository is built on the template provided by: [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). The template repository built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk) can be found at [terraform-provider-scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding).
 
-This repository is a terraform provider for Adyen, containing:
+This repository is a terraform provider for **Adyen**, containing:
 
-- A resource and a data source (`internal/provider/`),
-- Examples (`examples/`) and generated documentation (`docs/`),
-- Miscellaneous meta files.
+- A resources and a data sources can be found in (`internal/provider/`),
+- Examples can be found in (`examples/`) and generated documentation in (`docs/`),
 
 ## Requirements
 
@@ -16,8 +15,8 @@ This repository is a terraform provider for Adyen, containing:
 ## Building The Provider
 
 1. Clone the repository
-1. Enter the repository directory
-1. Build the provider using the Go `install` command:
+2. Enter the repository directory
+3. Build the provider using the Go `install` command:
 
 ```shell
 go install
@@ -28,18 +27,9 @@ go install
 This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
 Please see the Go documentation for the most up to date information about using Go modules.
 
-To add a new dependency `github.com/author/dependency` to your Terraform provider:
-
-```shell
-go get github.com/author/dependency
-go mod tidy
-```
-
-Then commit the changes to `go.mod` and `go.sum`.
-
 ## Using the provider
 
-Fill this in for each provider
+TODO
 
 ## Developing the Provider
 
