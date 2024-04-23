@@ -312,7 +312,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		}),
 	}
 
-	// Set state with the fully populated webhookMerchantCreateRequest
+	// Set state with the fully populated webhookMerchantCreateResponse
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
