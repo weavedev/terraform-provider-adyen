@@ -274,26 +274,11 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	//TODO: make generic functions for these 3 vars
-	var includeEventCodes []attr.Value
-	if len(webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes) > 0 {
-		for _, code := range webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes {
-			includeEventCodes = append(includeEventCodes, types.StringValue(code))
-		}
-	}
-
-	var excludeEventCodes []attr.Value
-	if len(webhookMerchantCreateResponse.AdditionalSettings.ExcludeEventCodes) > 0 {
-		for _, code := range webhookMerchantCreateResponse.AdditionalSettings.ExcludeEventCodes {
-			excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
-		}
-	}
-
-	properties := make(map[string]attr.Value)
+	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookMerchantCreateResponse.AdditionalSettings.IncludeEventCodes)
+	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookMerchantCreateResponse.AdditionalSettings.ExcludeEventCodes)
+	var properties map[string]attr.Value
 	if webhookMerchantCreateResponse.AdditionalSettings.Properties != nil {
-		for k, v := range *webhookMerchantCreateResponse.AdditionalSettings.Properties {
-			properties[k] = types.BoolValue(v)
-		}
+		properties = mapWebhooksAdditionalSettingsProperties(*webhookMerchantCreateResponse.AdditionalSettings.Properties)
 	}
 
 	// Map response body to schema and populate with attribute values
@@ -313,63 +298,14 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantCreateResponse.AcceptsUntrustedRootCertificate),
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantCreateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookMerchantCreateResponse.CertificateAlias),
-		//TODO: make generic function for Links & AdditionalSettings
-		Links: types.ObjectValueMust(
-			map[string]attr.Type{
-				"self": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"href": types.StringType,
-					},
-				},
-				"generate_hmac": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"href": types.StringType,
-					},
-				},
-				"merchant": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"href": types.StringType,
-					},
-				},
-				"test_webhook": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"href": types.StringType,
-					},
-				},
-			}, map[string]attr.Value{
-				"self": types.ObjectValueMust(map[string]attr.Type{
-					"href": types.StringType,
-				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookMerchantCreateResponse.Links.Self.Href),
-				}),
-				"generate_hmac": types.ObjectValueMust(map[string]attr.Type{
-					"href": types.StringType,
-				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookMerchantCreateResponse.Links.Self.Href),
-				}),
-				"merchant": types.ObjectValueMust(map[string]attr.Type{
-					"href": types.StringType,
-				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookMerchantCreateResponse.Links.Self.Href),
-				}),
-				"test_webhook": types.ObjectValueMust(map[string]attr.Type{
-					"href": types.StringType,
-				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookMerchantCreateResponse.Links.Self.Href),
-				}),
-			}),
-		Password: types.StringPointerValue(createMerchantWebhookRequest.Password), //FIXME: figure out how to hide this / or if not needed to hide
-		AdditionalSettings: types.ObjectValueMust(map[string]attr.Type{
-			"include_event_codes": types.ListType{
-				ElemType: types.StringType,
-			},
-			"exclude_event_codes": types.ListType{
-				ElemType: types.StringType,
-			},
-			"properties": types.MapType{
-				ElemType: types.BoolType,
-			},
-		}, map[string]attr.Value{
+		Password:                        types.StringPointerValue(createMerchantWebhookRequest.Password), //FIXME: figure out how to hide this / or if not needed to hide
+		Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+			webhookMerchantCreateResponse.Links.Self.Href,
+			webhookMerchantCreateResponse.Links.GenerateHmac.Href,
+			webhookMerchantCreateResponse.Links.Merchant.Href,
+			webhookMerchantCreateResponse.Links.TestWebhook.Href),
+		),
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
 			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 			"properties":          types.MapValueMust(types.BoolType, properties),
@@ -406,25 +342,11 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	var includeEventCodes []attr.Value
-	if len(webhookMerchantGetRequest.AdditionalSettings.IncludeEventCodes) > 0 {
-		for _, code := range webhookMerchantGetRequest.AdditionalSettings.IncludeEventCodes {
-			includeEventCodes = append(includeEventCodes, types.StringValue(code))
-		}
-	}
-
-	var excludeEventCodes []attr.Value
-	if len(webhookMerchantGetRequest.AdditionalSettings.ExcludeEventCodes) > 0 {
-		for _, code := range webhookMerchantGetRequest.AdditionalSettings.ExcludeEventCodes {
-			excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
-		}
-	}
-
-	properties := make(map[string]attr.Value)
+	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookMerchantGetRequest.AdditionalSettings.IncludeEventCodes)
+	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookMerchantGetRequest.AdditionalSettings.ExcludeEventCodes)
+	var properties map[string]attr.Value
 	if webhookMerchantGetRequest.AdditionalSettings.Properties != nil {
-		for k, v := range *webhookMerchantGetRequest.AdditionalSettings.Properties {
-			properties[k] = types.BoolValue(v)
-		}
+		properties = mapWebhooksAdditionalSettingsProperties(*webhookMerchantGetRequest.AdditionalSettings.Properties)
 	}
 
 	state = webhooksMerchantResourceModel{
@@ -443,61 +365,13 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 			AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantGetRequest.AcceptsUntrustedRootCertificate),
 			PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantGetRequest.PopulateSoapActionHeader),
 			CertificateAlias:                types.StringPointerValue(webhookMerchantGetRequest.CertificateAlias),
-			Links: types.ObjectValueMust(
-				map[string]attr.Type{
-					"self": types.ObjectType{
-						AttrTypes: map[string]attr.Type{
-							"href": types.StringType,
-						},
-					},
-					"generate_hmac": types.ObjectType{
-						AttrTypes: map[string]attr.Type{
-							"href": types.StringType,
-						},
-					},
-					"merchant": types.ObjectType{
-						AttrTypes: map[string]attr.Type{
-							"href": types.StringType,
-						},
-					},
-					"test_webhook": types.ObjectType{
-						AttrTypes: map[string]attr.Type{
-							"href": types.StringType,
-						},
-					},
-				}, map[string]attr.Value{
-					"self": types.ObjectValueMust(map[string]attr.Type{
-						"href": types.StringType,
-					}, map[string]attr.Value{
-						"href": types.StringPointerValue(webhookMerchantGetRequest.Links.Self.Href),
-					}),
-					"generate_hmac": types.ObjectValueMust(map[string]attr.Type{
-						"href": types.StringType,
-					}, map[string]attr.Value{
-						"href": types.StringPointerValue(webhookMerchantGetRequest.Links.Self.Href),
-					}),
-					"merchant": types.ObjectValueMust(map[string]attr.Type{
-						"href": types.StringType,
-					}, map[string]attr.Value{
-						"href": types.StringPointerValue(webhookMerchantGetRequest.Links.Self.Href),
-					}),
-					"test_webhook": types.ObjectValueMust(map[string]attr.Type{
-						"href": types.StringType,
-					}, map[string]attr.Value{
-						"href": types.StringPointerValue(webhookMerchantGetRequest.Links.Self.Href),
-					}),
-				}),
-			AdditionalSettings: types.ObjectValueMust(map[string]attr.Type{
-				"include_event_codes": types.ListType{
-					ElemType: types.StringType,
-				},
-				"exclude_event_codes": types.ListType{
-					ElemType: types.StringType,
-				},
-				"properties": types.MapType{
-					ElemType: types.BoolType,
-				},
-			}, map[string]attr.Value{
+			Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+				webhookMerchantGetRequest.Links.Self.Href,
+				webhookMerchantGetRequest.Links.GenerateHmac.Href,
+				webhookMerchantGetRequest.Links.Merchant.Href,
+				webhookMerchantGetRequest.Links.TestWebhook.Href),
+			),
+			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
 				"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 				"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 				"properties":          types.MapValueMust(types.BoolType, properties),
@@ -558,25 +432,11 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	var includeEventCodes []attr.Value
-	if len(webhookMerchantUpdateResponse.AdditionalSettings.IncludeEventCodes) > 0 {
-		for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.IncludeEventCodes {
-			includeEventCodes = append(includeEventCodes, types.StringValue(code))
-		}
-	}
-
-	var excludeEventCodes []attr.Value
-	if len(webhookMerchantUpdateResponse.AdditionalSettings.ExcludeEventCodes) > 0 {
-		for _, code := range webhookMerchantUpdateResponse.AdditionalSettings.ExcludeEventCodes {
-			excludeEventCodes = append(excludeEventCodes, types.StringValue(code))
-		}
-	}
-
-	properties := make(map[string]attr.Value)
+	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookMerchantUpdateResponse.AdditionalSettings.IncludeEventCodes)
+	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookMerchantUpdateResponse.AdditionalSettings.ExcludeEventCodes)
+	var properties map[string]attr.Value
 	if webhookMerchantUpdateResponse.AdditionalSettings.Properties != nil {
-		for k, v := range *webhookMerchantUpdateResponse.AdditionalSettings.Properties {
-			properties[k] = types.BoolValue(v)
-		}
+		properties = mapWebhooksAdditionalSettingsProperties(*webhookMerchantUpdateResponse.AdditionalSettings.Properties)
 	}
 
 	// Map response body to schema and populate Computed attribute values
@@ -596,61 +456,13 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantUpdateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookMerchantUpdateResponse.CertificateAlias),
 		Password:                        types.StringPointerValue(updateMerchantWebhookRequest.Password), //FIXME
-		Links: types.ObjectValueMust(
-			map[string]attr.Type{
-				"self": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"href": types.StringType,
-					},
-				},
-				"generate_hmac": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"href": types.StringType,
-					},
-				},
-				"merchant": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"href": types.StringType,
-					},
-				},
-				"test_webhook": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"href": types.StringType,
-					},
-				},
-			}, map[string]attr.Value{
-				"self": types.ObjectValueMust(map[string]attr.Type{
-					"href": types.StringType,
-				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookMerchantUpdateResponse.Links.Self.Href),
-				}),
-				"generate_hmac": types.ObjectValueMust(map[string]attr.Type{
-					"href": types.StringType,
-				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookMerchantUpdateResponse.Links.Self.Href),
-				}),
-				"merchant": types.ObjectValueMust(map[string]attr.Type{
-					"href": types.StringType,
-				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookMerchantUpdateResponse.Links.Self.Href),
-				}),
-				"test_webhook": types.ObjectValueMust(map[string]attr.Type{
-					"href": types.StringType,
-				}, map[string]attr.Value{
-					"href": types.StringPointerValue(webhookMerchantUpdateResponse.Links.Self.Href),
-				}),
-			}),
-		AdditionalSettings: types.ObjectValueMust(map[string]attr.Type{
-			"include_event_codes": types.ListType{
-				ElemType: types.StringType,
-			},
-			"exclude_event_codes": types.ListType{
-				ElemType: types.StringType,
-			},
-			"properties": types.MapType{
-				ElemType: types.BoolType,
-			},
-		}, map[string]attr.Value{
+		Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+			webhookMerchantUpdateResponse.Links.Self.Href,
+			webhookMerchantUpdateResponse.Links.GenerateHmac.Href,
+			webhookMerchantUpdateResponse.Links.Merchant.Href,
+			webhookMerchantUpdateResponse.Links.TestWebhook.Href),
+		),
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
 			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 			"properties":          types.MapValueMust(types.BoolType, properties),
