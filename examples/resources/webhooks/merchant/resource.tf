@@ -18,7 +18,7 @@ resource "adyen_webhooks_merchant" "example_webhook" {
     type                               = "standard"
     url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"
     username                           = "YOUR_USER"
-    password                           = "YOUR_PASSWORD_FROM_TERRAFORM"
+    password                           = "YOUR_PASSWORD"
     active                             = false
     communication_format               = "json"
     accepts_expired_certificate        = false
