@@ -1,7 +1,8 @@
 terraform {
   required_providers {
     adyen = {
-      source = "hashicorp.com/edu/adyen" //TODO: change to registry.terraform.io/weave/adyen
+      version = ">= 0.0.1"
+      source = "weavedev/adyen"
     }
   }
 }
