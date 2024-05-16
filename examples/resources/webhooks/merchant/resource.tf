@@ -2,7 +2,7 @@ terraform {
   required_providers {
     adyen = {
       version = ">= 0.0.1"
-      source = "weavedev/adyen"
+      source  = "weavedev/adyen"
     }
   }
 }
