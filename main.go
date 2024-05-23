@@ -38,7 +38,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "weavedev/adyen",
+		Address: "registry.terraform.io/weavedev/adyen",
 		Debug:   debug,
 	}
 
