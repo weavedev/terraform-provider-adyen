@@ -7,40 +7,21 @@ This repository is a terraform provider for **Adyen**, containing:
 - A resources and a data sources can be found in (`internal/provider/`),
 - Examples can be found in (`examples/`) and generated documentation in (`docs/`),
 
-
 ## Currently supported resources
 - [x] Webhook Merchant 
 - [ ] Webhook Company
+- [ ] ???
 - [ ] More on the way...
 
 
-## Usage 
-#### Until the provider is public and in the terraform registry, we need to update our `.terraformrc` file with the following content:
-```shell
-provider_installation {
-
-  dev_overrides {
-      "hashicorp.com/edu/adyen" = "<GOBINPATH>"
-  }
-
-  direct {}
-}
-```
-
-#### To fetch your `GOBINPATH` run:
-
-```shell
-go env GOBIN
-```
-
-#### If this command returns empty you can use the default `PATH` value instead: `Users/<yourusername>/go/bin`
-
+## Usage
 #### Add the provider to your terraform project:
 ```hcl
 terraform {
   required_providers {
     adyen = {
-      source = "hashicorp.com/edu/adyen" //TODO: change to registry.terraform.io/weave/adyen
+      version = ">= 0.0.1"
+      source = "weavedev/adyen"
     }
   }
 }
