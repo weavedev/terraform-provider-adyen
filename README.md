@@ -6,16 +6,27 @@ This repository is a terraform provider for **Adyen**, containing:
 
 - A resources and a data sources can be found in (`internal/provider/`),
 - Examples can be found in (`examples/`) and generated documentation in (`docs/`),
+- To generate or update documentation from root, run `go generate ./...`.
 
 ## Currently supported resources
-- [x] Webhook Merchant 
+- [x] Webhook Merchant
 - [ ] Webhook Company
 - [ ] ???
 - [ ] More on the way...
 
 
-## Usage
-#### Add the provider to your terraform project:
+## Provider Setup and Usage
+
+### Adyen Test Customer Area
+1. Go to [Adyen](https://docs.adyen.com/get-started-with-adyen/) and follow the instructions there to create a "test account" so you can get granted access to the "Test Customer Area".
+2. Go to your [Test Customer Area](https://ca-test.adyen.com/) and login with your credentials.
+3. Go to "**Developers**" -> "**API credentials**" -> "**Create new credential**".
+4. Create API Credential as a "**Web service user**".
+5. (Optional) Add a description to your API Credential.
+6. Note/Copy your API key under "**Authentication**" and optionally edit scopes under "**Permissions**" --> "**Roles**".
+7. Note your **"Merchant" & "Company" accounts** at the top left of your Dashboard.
+
+### Add the provider to your terraform project:
 ```hcl
 terraform {
   required_providers {
@@ -27,10 +38,10 @@ terraform {
 }
 
 provider "adyen" {
-  api_key          = "API_KEY"
-  environment      = "test" // "live"
-  merchant_account = "YOUR-ADYEN-MERCHANT-ACCOUNT"
-  company_account  = "YOUR-ADYEN-COMPANY-ACCOUNT"
+  api_key          = "API_KEY"                     // From Step 6
+  environment      = "test"                        // Or "live"
+  merchant_account = "YOUR-ADYEN-MERCHANT-ACCOUNT" // From Step 7
+  company_account  = "YOUR-ADYEN-COMPANY-ACCOUNT"  // From Step 7
 }
 
 # Example resource
@@ -53,42 +64,42 @@ Development
 ===========
 ## Requirements
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.8
 - [Go](https://golang.org/doc/install) >= 1.21
-
-## Building The Provider
-
-1. Clone the repository
-2. Enter the repository directory
-3. Build the provider using the Go `install` command:
-
-```shell
-go install
-```
-
-## Adding Dependencies
-
-This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
-Please see the Go documentation for the most up to date information about using Go modules.
-
-## Using the provider
-
-TODO
 
 ## Developing the Provider
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
+### Prepare Terraform for Local Provider Install
 
-To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
+1. Find `GOBIN` path. Your path may vary depending on how your Go environment variables are configured:
+    ```bash
+    go env GOBIN
+    ```
 
-To generate or update documentation from root, run `go generate ./...`.
+   If your `GOBIN` go environment variable is not set use the default path: `/Users/<Username>/go/bin`
 
-[//]: # (In order to run the full suite of Acceptance tests, run `make testacc`. )
+2. Create a `.terraformrc` file in your home directory (`~`), **if necessary**, then add the `dev_overrides` block below. Change the `<GOBIN_PATH>` to the value returned from the previous command: `go env GOBIN`. **Note: This override ensures that while developing you are using your locally compiled provider**.
+    ```ini
+    provider_installation {
+      dev_overrides {
+        "registry.terraform.io/weavedev/adyen" = "<GOBIN_PATH>"
+      }
+      direct {}
+    }
+    ```
+3. You should be getting this "Warning" from Terraform after adding your `dev_overrides` to the `.terraformrc` file: 
+   ```
+      Warning: Provider development overrides are in effect
+   
+      The following provider development overrides are set in the CLI configuration:
+        - weavedev/adyen in /Users/tolgaakyazi/go/bin
+      
+      The behavior may therefore not match any released version of the provider and applying changes may cause the state to become
+      incompatible with published releases.
+   ```
+4. Now you are ready to locally develop and test new data-sources, resources or functions for this provider!  
 
-[//]: # (*Note:* Acceptance tests create real resources, and often cost money to run.)
-[//]: # ()
-[//]: # (```shell)
+##
 
-[//]: # (make testacc)
 
-[//]: # (```)
+
