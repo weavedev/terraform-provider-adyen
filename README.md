@@ -8,11 +8,34 @@ This repository is a terraform provider for **Adyen**, containing:
 - Examples can be found in (`examples/`) and generated documentation in (`docs/`),
 - To generate or update documentation from root, run `go generate ./...`.
 
-## Currently supported resources
-- [x] Webhook Merchant
-- [ ] Webhook Company
-- [ ] ???
-- [ ] More on the way...
+## Adyen Resources Implementation Roadmap
+### Management API
+- Webhooks:
+  - [x] Webhook Merchant
+  - [ ] Webhook Company
+#### 
+- Users
+   - [ ] Users Merchant
+   - [ ] Users Company
+####
+- API Credentials
+   - [ ] My API Credentials
+   - [ ] Company API Credentials
+   - [ ] Merchant API Credentials
+####
+   - Terminal
+     - [ ] Actions
+     - [ ] Settings
+     - [ ] Orders
+####
+- Account:
+   - [ ] Account Merchant
+   - [ ] Account Company
+   - [ ] Account Store
+####
+   - [ ] Payment Methods
+   - [ ] Payout Settings
+   - [ ] Allowed Origins
 
 
 ## Provider Setup and Usage
