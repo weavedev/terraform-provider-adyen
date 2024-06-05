@@ -8,7 +8,7 @@ This repository is a terraform provider for **Adyen**, containing:
 - Examples can be found in (`examples/`) and generated documentation in (`docs/`),
 
 ## Currently supported resources
-- [x] Webhook Merchant 
+- [x] Webhook Merchant
 - [ ] Webhook Company
 - [ ] ???
 - [ ] More on the way...
@@ -28,7 +28,7 @@ terraform {
 
 provider "adyen" {
   api_key          = "API_KEY"
-  environment      = "test" // "live"
+  environment      = "test"
   merchant_account = "YOUR-ADYEN-MERCHANT-ACCOUNT"
   company_account  = "YOUR-ADYEN-COMPANY-ACCOUNT"
 }
@@ -53,8 +53,28 @@ Development
 ===========
 ## Requirements
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.8
 - [Go](https://golang.org/doc/install) >= 1.21
+
+## Prepare Terraform for Local Provider Install
+
+1. Find `GOBIN` path. Your path may vary depending on how your Go environment variables are configured:
+    ```bash
+    go env GOBIN
+    ```
+
+   If your GOBIN go environment variable is not set use the default path: `/Users/<Username>/go/bin`
+
+
+2. Create a `.terraformrc` file in your home directory (`~`), then add the `dev_overrides` block below. Change the `<GOBIN_PATH>` to the value returned from the previous command: `go env GOBIN`
+    ```ini
+    provider_installation {
+      dev_overrides {
+        "registry.terraform.io/weavedev/adyen" = "<GOBIN_PATH>"
+      }
+      direct {}
+    }
+    ```
 
 ## Building The Provider
 
@@ -63,7 +83,7 @@ Development
 3. Build the provider using the Go `install` command:
 
 ```shell
-go install
+go install .
 ```
 
 ## Adding Dependencies
@@ -71,24 +91,12 @@ go install
 This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
 Please see the Go documentation for the most up to date information about using Go modules.
 
-## Using the provider
-
-TODO
 
 ## Developing the Provider
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
 
-To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
+To compile the provider, run `go install .`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 To generate or update documentation from root, run `go generate ./...`.
 
-[//]: # (In order to run the full suite of Acceptance tests, run `make testacc`. )
-
-[//]: # (*Note:* Acceptance tests create real resources, and often cost money to run.)
-[//]: # ()
-[//]: # (```shell)
-
-[//]: # (make testacc)
-
-[//]: # (```)
