@@ -17,7 +17,26 @@ This repository is a terraform provider for **Adyen**, containing:
 
 ## Provider Setup and Usage
 
-### Adyen Test Customer Area
+### Clone the repository
+
+First, clone the `terraform-provider-adyen` repository:
+
+1. Open your terminal or command prompt.
+2. Run the following command to clone the repository:
+
+    ```sh
+    git clone https://github.com/weavedev/terraform-provider-adyen.git
+    ```
+
+3. Navigate to the cloned directory:
+
+    ```sh
+    cd terraform-provider-adyen
+    ```
+   
+### Setup Credentials
+
+#### Adyen Test Customer Area
 1. Go to [Adyen](https://docs.adyen.com/get-started-with-adyen/) and follow the instructions there to create a "test account" so you can get granted access to the "Test Customer Area".
 2. Go to your [Test Customer Area](https://ca-test.adyen.com/) and login with your credentials.
 3. Go to "**Developers**" -> "**API credentials**" -> "**Create new credential**".
@@ -26,7 +45,7 @@ This repository is a terraform provider for **Adyen**, containing:
 6. Note/Copy your API key under "**Authentication**" and optionally edit scopes under "**Permissions**" --> "**Roles**".
 7. Note your **"Merchant" & "Company" accounts** at the top left of your Dashboard.
 
-### Add the provider to your terraform project:
+#### Add the provider to your terraform project:
 ```hcl
 terraform {
   required_providers {
