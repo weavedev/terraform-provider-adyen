@@ -305,7 +305,7 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 			webhookMerchantCreateResponse.Links.Merchant.Href,
 			webhookMerchantCreateResponse.Links.TestWebhook.Href),
 		),
-		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapMerchant, map[string]attr.Value{
 			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 			"properties":          types.MapValueMust(types.BoolType, properties),
@@ -371,7 +371,7 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 				webhookMerchantGetRequest.Links.Merchant.Href,
 				webhookMerchantGetRequest.Links.TestWebhook.Href),
 			),
-			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
+			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapMerchant, map[string]attr.Value{
 				"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 				"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 				"properties":          types.MapValueMust(types.BoolType, properties),
@@ -462,7 +462,7 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 			webhookMerchantUpdateResponse.Links.Merchant.Href,
 			webhookMerchantUpdateResponse.Links.TestWebhook.Href),
 		),
-		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapMerchant, map[string]attr.Value{
 			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 			"properties":          types.MapValueMust(types.BoolType, properties),

@@ -23,12 +23,13 @@ var (
 
 // webhookResource is the resource implementation.
 type webhookCompanyResource struct {
-	client *adyen.APIClient
+	client         *adyen.APIClient
+	companyAccount string
 }
 
 // NewWebhooksCompanyResource is a helper function to simplify the provider implementation.
-func NewWebhooksCompanyResource() resource.Resource {
-	return &webhookCompanyResource{}
+func NewWebhooksCompanyResource(companyAccount string) resource.Resource {
+	return &webhookCompanyResource{companyAccount: companyAccount}
 }
 
 // webhooksCompanyResourceModel maps the "webhooks_company" schema data for a resource.
@@ -55,7 +56,7 @@ type webhooksCompanyModel struct {
 	PopulateSoapActionHeader        types.Bool   `tfsdk:"populate_soap_action_header"`
 	Links                           types.Object `tfsdk:"links"`
 	AdditionalSettings              types.Object `tfsdk:"additional_settings"`
-	FilterMerchantAccountType       types.String `tfsdk:"filter_merchant_account_Type"`
+	FilterMerchantAccountType       types.String `tfsdk:"filter_merchant_account_type"`
 	FilterMerchantAccounts          types.List   `tfsdk:"filter_merchant_accounts"`
 }
 
@@ -214,16 +215,6 @@ func (r *webhookCompanyResource) Schema(ctx context.Context, req resource.Schema
 									"For example, captureDelayHours: true means the standard notifications you get will contain the " +
 									"number of hours remaining until the payment will be captured.",
 							},
-							"include_event_codes": schema.ListAttribute{
-								Computed:    true,
-								ElementType: types.StringType,
-								Description: "Object containing list of event codes for which the notification will be sent.",
-							},
-							"exclude_event_codes": schema.ListAttribute{
-								Computed:    true,
-								ElementType: types.StringType,
-								Description: "Object containing list of event codes for which the notification will NOT be sent.",
-							},
 						},
 					},
 					"filter_merchant_account_type": schema.StringAttribute{
@@ -274,20 +265,16 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 		FilterMerchantAccountType:       plan.WebhooksCompany.FilterMerchantAccountType.ValueString(),
 	}
 
-	var filterMerchantAccounts []string
-	for _, filter := range plan.WebhooksCompany.FilterMerchantAccounts.Elements() {
-		filterMerchantAccounts = append(filterMerchantAccounts, filter.String())
+	var filterMerchantAccounts []attr.Value
+	if len(createCompanyWebhookRequest.FilterMerchantAccounts) > 0 {
+		filterMerchantAccounts = mapWebhooksCompanyFilterMerchantAccounts(createCompanyWebhookRequest.FilterMerchantAccounts)
 	}
-	createCompanyWebhookRequest.FilterMerchantAccounts = filterMerchantAccounts
-
-	// Get Adyen CompanyAccount from ctx
-	companyAccount := ctx.Value("adyen_company_account").(string)
 
 	// Create a new webhook
 	webhookCompanyCreateRequest := r.client.
 		Management().
 		WebhooksCompanyLevelApi.
-		SetUpWebhookInput(companyAccount).
+		SetUpWebhookInput(r.companyAccount).
 		CreateCompanyWebhookRequest(*createCompanyWebhookRequest)
 	webhookCompanyCreateResponse, _, err := r.client.
 		Management().
@@ -301,8 +288,6 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyCreateResponse.AdditionalSettings.IncludeEventCodes)
-	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyCreateResponse.AdditionalSettings.ExcludeEventCodes)
 	var properties map[string]attr.Value
 	if webhookCompanyCreateResponse.AdditionalSettings.Properties != nil {
 		properties = mapWebhooksAdditionalSettingsProperties(*webhookCompanyCreateResponse.AdditionalSettings.Properties)
@@ -332,11 +317,11 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 			webhookCompanyCreateResponse.Links.Company.Href,
 			webhookCompanyCreateResponse.Links.TestWebhook.Href),
 		),
-		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
-			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
-			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
-			"properties":          types.MapValueMust(types.BoolType, properties),
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapCompany, map[string]attr.Value{
+			"properties": types.MapValueMust(types.BoolType, properties),
 		}),
+		FilterMerchantAccountType: types.StringValue(createCompanyWebhookRequest.FilterMerchantAccountType),
+		FilterMerchantAccounts:    types.ListValueMust(types.StringType, filterMerchantAccounts),
 	}
 
 	// Set state with the fully populated webhookCompanyCreateResponse
@@ -356,12 +341,9 @@ func (r *webhookCompanyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	// Get Adyen CompanyAccount from ctx
-	companyAccount := ctx.Value("adyen_company_account").(string)
-
 	var data management.WebhooksCompanyLevelApiGetWebhookInput
-	if companyAccount != "" && state.WebhooksCompany.ID.ValueString() != "" {
-		data = r.client.Management().WebhooksCompanyLevelApi.GetWebhookInput(companyAccount, state.WebhooksCompany.ID.ValueString())
+	if r.companyAccount != "" && state.WebhooksCompany.ID.ValueString() != "" {
+		data = r.client.Management().WebhooksCompanyLevelApi.GetWebhookInput(r.companyAccount, state.WebhooksCompany.ID.ValueString())
 	}
 
 	webhookCompanyGetRequest, _, _ := r.client.Management().WebhooksCompanyLevelApi.GetWebhook(ctx, data)
@@ -372,11 +354,14 @@ func (r *webhookCompanyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyGetRequest.AdditionalSettings.IncludeEventCodes)
-	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyGetRequest.AdditionalSettings.ExcludeEventCodes)
 	var properties map[string]attr.Value
 	if webhookCompanyGetRequest.AdditionalSettings.Properties != nil {
 		properties = mapWebhooksAdditionalSettingsProperties(*webhookCompanyGetRequest.AdditionalSettings.Properties)
+	}
+
+	var filterMerchantAccounts []attr.Value
+	if len(webhookCompanyGetRequest.FilterMerchantAccounts) > 0 {
+		filterMerchantAccounts = mapWebhooksCompanyFilterMerchantAccounts(webhookCompanyGetRequest.FilterMerchantAccounts)
 	}
 
 	state = webhooksCompanyResourceModel{
@@ -401,11 +386,11 @@ func (r *webhookCompanyResource) Read(ctx context.Context, req resource.ReadRequ
 				webhookCompanyGetRequest.Links.Company.Href,
 				webhookCompanyGetRequest.Links.TestWebhook.Href),
 			),
-			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
-				"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
-				"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
-				"properties":          types.MapValueMust(types.BoolType, properties),
+			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapCompany, map[string]attr.Value{
+				"properties": types.MapValueMust(types.BoolType, properties),
 			}),
+			FilterMerchantAccountType: types.StringPointerValue(webhookCompanyGetRequest.FilterMerchantAccountType),
+			FilterMerchantAccounts:    types.ListValueMust(types.StringType, filterMerchantAccounts),
 		},
 	}
 
@@ -444,14 +429,11 @@ func (r *webhookCompanyResource) Update(ctx context.Context, req resource.Update
 		Username:                        plan.WebhooksCompany.Username.ValueStringPointer(),
 	}
 
-	// Get Adyen CompanyAccount from ctx
-	companyAccount := ctx.Value("adyen_company_account").(string)
-
 	// Create a new webhook
 	webhookCompanyUpdateRequest := r.client.
 		Management().
 		WebhooksCompanyLevelApi.
-		UpdateWebhookInput(companyAccount, plan.WebhooksCompany.ID.ValueString()).
+		UpdateWebhookInput(r.companyAccount, plan.WebhooksCompany.ID.ValueString()).
 		UpdateCompanyWebhookRequest(*updateCompanyWebhookRequest)
 	webhookCompanyUpdateResponse, _, err := r.client.
 		Management().
@@ -465,8 +447,6 @@ func (r *webhookCompanyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyUpdateResponse.AdditionalSettings.IncludeEventCodes)
-	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyUpdateResponse.AdditionalSettings.ExcludeEventCodes)
 	var properties map[string]attr.Value
 	if webhookCompanyUpdateResponse.AdditionalSettings.Properties != nil {
 		properties = mapWebhooksAdditionalSettingsProperties(*webhookCompanyUpdateResponse.AdditionalSettings.Properties)
@@ -495,10 +475,8 @@ func (r *webhookCompanyResource) Update(ctx context.Context, req resource.Update
 			webhookCompanyUpdateResponse.Links.Company.Href,
 			webhookCompanyUpdateResponse.Links.TestWebhook.Href),
 		),
-		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
-			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
-			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
-			"properties":          types.MapValueMust(types.BoolType, properties),
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapCompany, map[string]attr.Value{
+			"properties": types.MapValueMust(types.BoolType, properties),
 		}),
 	}
 
@@ -519,10 +497,7 @@ func (r *webhookCompanyResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	// Get Adyen CompanyAccount from ctx
-	companyAccount := ctx.Value("adyen_company_account").(string)
-
-	removeWebhookInput := r.client.Management().WebhooksCompanyLevelApi.RemoveWebhookInput(companyAccount, state.WebhooksCompany.ID.ValueString())
+	removeWebhookInput := r.client.Management().WebhooksCompanyLevelApi.RemoveWebhookInput(r.companyAccount, state.WebhooksCompany.ID.ValueString())
 	_, err := r.client.Management().WebhooksCompanyLevelApi.RemoveWebhook(ctx, removeWebhookInput)
 	if err != nil {
 		resp.Diagnostics.AddError(

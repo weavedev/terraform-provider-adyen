@@ -5,6 +5,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+//TODO: generalize these functions
+
 func mapWebhooksAdditionalSettingsEventCodes(input []string) []attr.Value {
 	output := make([]attr.Value, 0, len(input))
 	for _, code := range input {
@@ -17,6 +19,14 @@ func mapWebhooksAdditionalSettingsProperties(input map[string]bool) map[string]a
 	output := make(map[string]attr.Value)
 	for k, v := range input {
 		output[k] = types.BoolValue(v)
+	}
+	return output
+}
+
+func mapWebhooksCompanyFilterMerchantAccounts(input []string) []attr.Value {
+	output := make([]attr.Value, len(input))
+	for _, v := range input {
+		output = append(output, types.StringValue(v))
 	}
 	return output
 }
@@ -69,7 +79,19 @@ var linksAttributeMap = map[string]attr.Type{
 	},
 }
 
-var additionalSettingsAttributeMap = map[string]attr.Type{
+var additionalSettingsAttributeMapMerchant = map[string]attr.Type{
+	"include_event_codes": types.ListType{
+		ElemType: types.StringType,
+	},
+	"exclude_event_codes": types.ListType{
+		ElemType: types.StringType,
+	},
+	"properties": types.MapType{
+		ElemType: types.BoolType,
+	},
+}
+
+var additionalSettingsAttributeMapCompany = map[string]attr.Type{
 	"include_event_codes": types.ListType{
 		ElemType: types.StringType,
 	},

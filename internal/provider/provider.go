@@ -31,7 +31,8 @@ func New(version string) func() provider.Provider {
 
 // adyenProvider defines the provider implementation.
 type adyenProvider struct {
-	version string
+	version        string
+	companyAccount string
 }
 
 // adyenProviderModel describes the provider data model.
@@ -205,6 +206,8 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		MerchantAccount: merchantAccount,
 	})
 
+	p.companyAccount = companyAccount
+
 	resp.DataSourceData = client
 	resp.ResourceData = client
 
@@ -214,8 +217,8 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 // Resources defines the resources implemented in the provider.
 func (p *adyenProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewWebhooksMerchantResource,
-		NewWebhooksCompanyResource,
+		func() resource.Resource { return NewWebhooksMerchantResource() },
+		func() resource.Resource { return NewWebhooksCompanyResource(p.companyAccount) },
 	}
 }
 
