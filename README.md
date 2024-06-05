@@ -15,7 +15,17 @@ This repository is a terraform provider for **Adyen**, containing:
 
 
 ## Usage
-#### Add the provider to your terraform project:
+
+### Adyen Test Customer Area
+1. Go to [Adyen](https://docs.adyen.com/get-started-with-adyen/) and follow the instructions there to create a "test account" so you can get granted access to the "Test Customer Area".
+2. Go to your [Test Customer Area](https://ca-test.adyen.com/) and login with your credentials.
+3. Go to "**Developers**" -> "**API credentials**" -> "**Create new credential**".
+4. Create API Credential as a "**Web service user**".
+5. (Optional) Add a description to your API Credential.
+6. Note/Copy your API key under "**Authentication**" and optionally edit scopes under "**Permissions**" --> "**Roles**".
+7. Note your **"Merchant" & "Company" accounts** at the top left of your Dashboard.
+
+### Add the provider to your terraform project:
 ```hcl
 terraform {
   required_providers {
@@ -27,10 +37,10 @@ terraform {
 }
 
 provider "adyen" {
-  api_key          = "API_KEY"
-  environment      = "test"
-  merchant_account = "YOUR-ADYEN-MERCHANT-ACCOUNT"
-  company_account  = "YOUR-ADYEN-COMPANY-ACCOUNT"
+  api_key          = "API_KEY"                     // From Step 6
+  environment      = "test"                        // Or "live"
+  merchant_account = "YOUR-ADYEN-MERCHANT-ACCOUNT" // From Step 7
+  company_account  = "YOUR-ADYEN-COMPANY-ACCOUNT"  // From Step 7
 }
 
 # Example resource
