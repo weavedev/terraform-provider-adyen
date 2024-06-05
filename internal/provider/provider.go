@@ -39,7 +39,7 @@ type adyenProviderModel struct {
 	ApiKey          types.String `tfsdk:"api_key"`
 	Environment     types.String `tfsdk:"environment"`
 	MerchantAccount types.String `tfsdk:"merchant_account"`
-	CompanyAccount  types.String `tfsdk:"company_account"`
+	CompanyAccount  types.String `tfsdk:"company_account"` //TODO: figure out how to use this globally
 }
 
 // Metadata returns the provider type name.
@@ -107,7 +107,7 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	if config.MerchantAccount.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("merchant_account"),
-			"Unknown Adyen API Key",
+			"Unknown Adyen API Merchant Account",
 			"The provider cannot create the Adyen API client as there is an unknown configuration value for the Adyen API Merchant Account. "+
 				"Either target apply the source of the value first, set the value statically in the configuration, or use the ADYEN_API_MERCHANT_ACCOUNT environment variable.",
 		)
@@ -116,7 +116,7 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	if config.CompanyAccount.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("company_account"),
-			"Unknown Adyen API Key",
+			"Unknown Adyen Company Account",
 			"The provider cannot create the Adyen API client as there is an unknown configuration value for the Adyen API Company Account. "+
 				"Either target apply the source of the value first, set the value statically in the configuration, or use the ADYEN_API_COMPANY_ACCOUNT environment variable.",
 		)
@@ -197,11 +197,7 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	ctx = tflog.SetField(ctx, "adyen_company_account", companyAccount)
 
 	// Add a filter to mask the apikey since it is sensitive information about the environment.
-	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "adyen_apikey")
-	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "adyen_merchant_account")
-	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "adyen_company_account")
-
-	tflog.Info(ctx, "Configured Adyen API client", map[string]any{"success": true})
+	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "adyen_apikey", "adyen_merchant_account", "adyen_company_account")
 
 	client := adyen.NewClient(&common.Config{
 		ApiKey:          apiKey,
@@ -211,12 +207,15 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 
 	resp.DataSourceData = client
 	resp.ResourceData = client
+
+	tflog.Info(ctx, "Configured Adyen API client", map[string]any{"success": true})
 }
 
 // Resources defines the resources implemented in the provider.
 func (p *adyenProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewWebhooksMerchantResource,
+		NewWebhooksCompanyResource,
 	}
 }
 
