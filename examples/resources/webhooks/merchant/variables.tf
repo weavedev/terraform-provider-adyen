@@ -13,6 +13,6 @@ variable "merchant_account" {
   type        = string
 }
 variable "company_account" {
-  description =  "Company Account from your Adyen Dashboard"
+  description = "Company Account from your Adyen Dashboard"
   type        = string
 }
