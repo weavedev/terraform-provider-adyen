@@ -15,6 +15,9 @@ func testAccCheckAdyenWebhookCompanyDestroy(tfstate *terraform.State) error {
 	client := suite.client
 
 	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT") //TODO: nil check
+	if companyAccount == "" {
+		return fmt.Errorf("received empty company account")
+	}
 
 	for _, rs := range tfstate.RootModule().Resources {
 		value, ok := rs.Primary.Attributes["webhooks_company.id"]
