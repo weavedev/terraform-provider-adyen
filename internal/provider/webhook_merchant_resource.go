@@ -299,13 +299,13 @@ func (r *webhookMerchantResource) Create(ctx context.Context, req resource.Creat
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantCreateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookMerchantCreateResponse.CertificateAlias),
 		Password:                        types.StringPointerValue(createMerchantWebhookRequest.Password), //FIXME: figure out how to hide this / or if not needed to hide
-		Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+		Links: types.ObjectValueMust(linksAttributeMapMerchant, mapWebhooksLinksMerchant(
 			webhookMerchantCreateResponse.Links.Self.Href,
 			webhookMerchantCreateResponse.Links.GenerateHmac.Href,
 			webhookMerchantCreateResponse.Links.Merchant.Href,
 			webhookMerchantCreateResponse.Links.TestWebhook.Href),
 		),
-		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapMerchant, map[string]attr.Value{
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
 			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 			"properties":          types.MapValueMust(types.BoolType, properties),
@@ -365,13 +365,13 @@ func (r *webhookMerchantResource) Read(ctx context.Context, req resource.ReadReq
 			AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookMerchantGetRequest.AcceptsUntrustedRootCertificate),
 			PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantGetRequest.PopulateSoapActionHeader),
 			CertificateAlias:                types.StringPointerValue(webhookMerchantGetRequest.CertificateAlias),
-			Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+			Links: types.ObjectValueMust(linksAttributeMapMerchant, mapWebhooksLinksMerchant(
 				webhookMerchantGetRequest.Links.Self.Href,
 				webhookMerchantGetRequest.Links.GenerateHmac.Href,
 				webhookMerchantGetRequest.Links.Merchant.Href,
 				webhookMerchantGetRequest.Links.TestWebhook.Href),
 			),
-			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapMerchant, map[string]attr.Value{
+			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
 				"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 				"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 				"properties":          types.MapValueMust(types.BoolType, properties),
@@ -456,13 +456,13 @@ func (r *webhookMerchantResource) Update(ctx context.Context, req resource.Updat
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookMerchantUpdateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookMerchantUpdateResponse.CertificateAlias),
 		Password:                        types.StringPointerValue(updateMerchantWebhookRequest.Password), //FIXME
-		Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+		Links: types.ObjectValueMust(linksAttributeMapMerchant, mapWebhooksLinksMerchant(
 			webhookMerchantUpdateResponse.Links.Self.Href,
 			webhookMerchantUpdateResponse.Links.GenerateHmac.Href,
 			webhookMerchantUpdateResponse.Links.Merchant.Href,
 			webhookMerchantUpdateResponse.Links.TestWebhook.Href),
 		),
-		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapMerchant, map[string]attr.Value{
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
 			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
 			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
 			"properties":          types.MapValueMust(types.BoolType, properties),

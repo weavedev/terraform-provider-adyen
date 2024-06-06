@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"strings"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -39,6 +40,7 @@ type webhooksCompanyResourceModel struct {
 
 type webhooksCompanyModel struct {
 	ID                              types.String `tfsdk:"id"`
+	CompanyAccount                  types.String `tfsdk:"company_account"` //TODO: not really what we want, this should be somewhere else. Config or something like that.
 	Type                            types.String `tfsdk:"type"`
 	URL                             types.String `tfsdk:"url"`
 	Username                        types.String `tfsdk:"username"`
@@ -102,6 +104,10 @@ func (r *webhookCompanyResource) Schema(ctx context.Context, req resource.Schema
 							stringplanmodifier.UseStateForUnknown(), // Required to use this when it is known that an unconfigured value will remain the same after a resource update.
 						},
 					},
+					"company_account": schema.StringAttribute{
+						Required:    true,
+						Description: "Company Account of your Adyen environment",
+					},
 					"type": schema.StringAttribute{
 						Required: true,
 						Description: "The type of webhook that is being created. Possible values are:\n\nstandard\naccount-settings-notification\n" +
@@ -114,11 +120,11 @@ func (r *webhookCompanyResource) Schema(ctx context.Context, req resource.Schema
 						Description: "Public URL where webhooks will be sent, for example https://www.domain.com/webhook-endpoint.",
 					},
 					"username": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						Description: "Username to access the webhook URL.",
 					},
 					"password": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						Sensitive:   true,
 						Description: "The password required for basic authentication.",
 					},
@@ -215,6 +221,16 @@ func (r *webhookCompanyResource) Schema(ctx context.Context, req resource.Schema
 									"For example, captureDelayHours: true means the standard notifications you get will contain the " +
 									"number of hours remaining until the payment will be captured.",
 							},
+							"include_event_codes": schema.ListAttribute{
+								Computed:    true,
+								ElementType: types.StringType,
+								Description: "Object containing list of event codes for which the notification will be sent.",
+							},
+							"exclude_event_codes": schema.ListAttribute{
+								Computed:    true,
+								ElementType: types.StringType,
+								Description: "Object containing list of event codes for which the notification will NOT be sent.",
+							},
 						},
 					},
 					"filter_merchant_account_type": schema.StringAttribute{
@@ -265,16 +281,24 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 		FilterMerchantAccountType:       plan.WebhooksCompany.FilterMerchantAccountType.ValueString(),
 	}
 
-	var filterMerchantAccounts []attr.Value
-	if len(createCompanyWebhookRequest.FilterMerchantAccounts) > 0 {
-		filterMerchantAccounts = mapWebhooksCompanyFilterMerchantAccounts(createCompanyWebhookRequest.FilterMerchantAccounts)
+	var filterMerchantAccounts []string
+	if len(plan.WebhooksCompany.FilterMerchantAccounts.Elements()) > 0 {
+		for _, elem := range plan.WebhooksCompany.FilterMerchantAccounts.Elements() {
+			//TODO: add check/util func if elem == string??
+			trimmedElem := strings.Trim(elem.String(), "\"") //TODO: check if needed
+			filterMerchantAccounts = append(filterMerchantAccounts, trimmedElem)
+		}
 	}
+	// Add parsed filterMerchantAccounts from plan
+	createCompanyWebhookRequest.FilterMerchantAccounts = filterMerchantAccounts
 
-	// Create a new webhook
+	companyAccount := plan.WebhooksCompany.CompanyAccount.String()
+	companyAccount = strings.Trim(companyAccount, "\"") //TODO: figure out why this is necessary
+	// Create a new company webhook
 	webhookCompanyCreateRequest := r.client.
 		Management().
 		WebhooksCompanyLevelApi.
-		SetUpWebhookInput(r.companyAccount).
+		SetUpWebhookInput(companyAccount).
 		CreateCompanyWebhookRequest(*createCompanyWebhookRequest)
 	webhookCompanyCreateResponse, _, err := r.client.
 		Management().
@@ -288,6 +312,8 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
+	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyCreateResponse.AdditionalSettings.IncludeEventCodes)
+	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyCreateResponse.AdditionalSettings.ExcludeEventCodes)
 	var properties map[string]attr.Value
 	if webhookCompanyCreateResponse.AdditionalSettings.Properties != nil {
 		properties = mapWebhooksAdditionalSettingsProperties(*webhookCompanyCreateResponse.AdditionalSettings.Properties)
@@ -297,6 +323,7 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 	plan.WebhooksCompany = webhooksCompanyModel{
 		ID:                              types.StringPointerValue(webhookCompanyCreateResponse.Id),
 		Description:                     types.StringPointerValue(webhookCompanyCreateResponse.Description),
+		CompanyAccount:                  plan.WebhooksCompany.CompanyAccount, //TODO: figure this out
 		Type:                            types.StringValue(webhookCompanyCreateResponse.Type),
 		URL:                             types.StringValue(webhookCompanyCreateResponse.Url),
 		Username:                        types.StringPointerValue(webhookCompanyCreateResponse.Username),
@@ -311,17 +338,19 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookCompanyCreateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookCompanyCreateResponse.CertificateAlias),
 		Password:                        types.StringPointerValue(createCompanyWebhookRequest.Password), //FIXME: figure out how to hide this / or if not needed to hide
-		Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+		Links: types.ObjectValueMust(linksAttributeMapCompany, mapWebhooksLinksCompany(
 			webhookCompanyCreateResponse.Links.Self.Href,
 			webhookCompanyCreateResponse.Links.GenerateHmac.Href,
 			webhookCompanyCreateResponse.Links.Company.Href,
 			webhookCompanyCreateResponse.Links.TestWebhook.Href),
 		),
-		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapCompany, map[string]attr.Value{
-			"properties": types.MapValueMust(types.BoolType, properties),
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
+			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
+			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
+			"properties":          types.MapValueMust(types.BoolType, properties),
 		}),
-		FilterMerchantAccountType: types.StringValue(createCompanyWebhookRequest.FilterMerchantAccountType),
-		FilterMerchantAccounts:    types.ListValueMust(types.StringType, filterMerchantAccounts),
+		FilterMerchantAccountType: types.StringPointerValue(webhookCompanyCreateResponse.FilterMerchantAccountType),
+		FilterMerchantAccounts:    types.ListValueMust(types.StringType, mapWebhooksCompanyFilterMerchantAccountsFromString(webhookCompanyCreateResponse.FilterMerchantAccounts)),
 	}
 
 	// Set state with the fully populated webhookCompanyCreateResponse
@@ -342,8 +371,8 @@ func (r *webhookCompanyResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	var data management.WebhooksCompanyLevelApiGetWebhookInput
-	if r.companyAccount != "" && state.WebhooksCompany.ID.ValueString() != "" {
-		data = r.client.Management().WebhooksCompanyLevelApi.GetWebhookInput(r.companyAccount, state.WebhooksCompany.ID.ValueString())
+	if state.WebhooksCompany.CompanyAccount.String() != "" && state.WebhooksCompany.ID.ValueString() != "" {
+		data = r.client.Management().WebhooksCompanyLevelApi.GetWebhookInput(state.WebhooksCompany.CompanyAccount.String(), state.WebhooksCompany.ID.ValueString())
 	}
 
 	webhookCompanyGetRequest, _, _ := r.client.Management().WebhooksCompanyLevelApi.GetWebhook(ctx, data)
@@ -354,6 +383,8 @@ func (r *webhookCompanyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
+	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyGetRequest.AdditionalSettings.IncludeEventCodes)
+	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyGetRequest.AdditionalSettings.ExcludeEventCodes)
 	var properties map[string]attr.Value
 	if webhookCompanyGetRequest.AdditionalSettings.Properties != nil {
 		properties = mapWebhooksAdditionalSettingsProperties(*webhookCompanyGetRequest.AdditionalSettings.Properties)
@@ -361,7 +392,7 @@ func (r *webhookCompanyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	var filterMerchantAccounts []attr.Value
 	if len(webhookCompanyGetRequest.FilterMerchantAccounts) > 0 {
-		filterMerchantAccounts = mapWebhooksCompanyFilterMerchantAccounts(webhookCompanyGetRequest.FilterMerchantAccounts)
+		filterMerchantAccounts = mapWebhooksCompanyFilterMerchantAccountsFromString(webhookCompanyGetRequest.FilterMerchantAccounts)
 	}
 
 	state = webhooksCompanyResourceModel{
@@ -380,14 +411,16 @@ func (r *webhookCompanyResource) Read(ctx context.Context, req resource.ReadRequ
 			AcceptsUntrustedRootCertificate: types.BoolPointerValue(webhookCompanyGetRequest.AcceptsUntrustedRootCertificate),
 			PopulateSoapActionHeader:        types.BoolPointerValue(webhookCompanyGetRequest.PopulateSoapActionHeader),
 			CertificateAlias:                types.StringPointerValue(webhookCompanyGetRequest.CertificateAlias),
-			Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+			Links: types.ObjectValueMust(linksAttributeMapCompany, mapWebhooksLinksCompany(
 				webhookCompanyGetRequest.Links.Self.Href,
 				webhookCompanyGetRequest.Links.GenerateHmac.Href,
 				webhookCompanyGetRequest.Links.Company.Href,
 				webhookCompanyGetRequest.Links.TestWebhook.Href),
 			),
-			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapCompany, map[string]attr.Value{
-				"properties": types.MapValueMust(types.BoolType, properties),
+			AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
+				"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
+				"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
+				"properties":          types.MapValueMust(types.BoolType, properties),
 			}),
 			FilterMerchantAccountType: types.StringPointerValue(webhookCompanyGetRequest.FilterMerchantAccountType),
 			FilterMerchantAccounts:    types.ListValueMust(types.StringType, filterMerchantAccounts),
@@ -433,7 +466,7 @@ func (r *webhookCompanyResource) Update(ctx context.Context, req resource.Update
 	webhookCompanyUpdateRequest := r.client.
 		Management().
 		WebhooksCompanyLevelApi.
-		UpdateWebhookInput(r.companyAccount, plan.WebhooksCompany.ID.ValueString()).
+		UpdateWebhookInput(plan.WebhooksCompany.CompanyAccount.String(), plan.WebhooksCompany.ID.ValueString()).
 		UpdateCompanyWebhookRequest(*updateCompanyWebhookRequest)
 	webhookCompanyUpdateResponse, _, err := r.client.
 		Management().
@@ -447,6 +480,8 @@ func (r *webhookCompanyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
+	includeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyUpdateResponse.AdditionalSettings.IncludeEventCodes)
+	excludeEventCodes := mapWebhooksAdditionalSettingsEventCodes(webhookCompanyUpdateResponse.AdditionalSettings.ExcludeEventCodes)
 	var properties map[string]attr.Value
 	if webhookCompanyUpdateResponse.AdditionalSettings.Properties != nil {
 		properties = mapWebhooksAdditionalSettingsProperties(*webhookCompanyUpdateResponse.AdditionalSettings.Properties)
@@ -469,14 +504,16 @@ func (r *webhookCompanyResource) Update(ctx context.Context, req resource.Update
 		PopulateSoapActionHeader:        types.BoolPointerValue(webhookCompanyUpdateResponse.PopulateSoapActionHeader),
 		CertificateAlias:                types.StringPointerValue(webhookCompanyUpdateResponse.CertificateAlias),
 		Password:                        types.StringPointerValue(updateCompanyWebhookRequest.Password), //FIXME
-		Links: types.ObjectValueMust(linksAttributeMap, mapWebhooksLinks(
+		Links: types.ObjectValueMust(linksAttributeMapCompany, mapWebhooksLinksCompany(
 			webhookCompanyUpdateResponse.Links.Self.Href,
 			webhookCompanyUpdateResponse.Links.GenerateHmac.Href,
 			webhookCompanyUpdateResponse.Links.Company.Href,
 			webhookCompanyUpdateResponse.Links.TestWebhook.Href),
 		),
-		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMapCompany, map[string]attr.Value{
-			"properties": types.MapValueMust(types.BoolType, properties),
+		AdditionalSettings: types.ObjectValueMust(additionalSettingsAttributeMap, map[string]attr.Value{
+			"include_event_codes": types.ListValueMust(types.StringType, includeEventCodes),
+			"exclude_event_codes": types.ListValueMust(types.StringType, excludeEventCodes),
+			"properties":          types.MapValueMust(types.BoolType, properties),
 		}),
 	}
 
@@ -497,7 +534,10 @@ func (r *webhookCompanyResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	removeWebhookInput := r.client.Management().WebhooksCompanyLevelApi.RemoveWebhookInput(r.companyAccount, state.WebhooksCompany.ID.ValueString())
+	companyAccount := state.WebhooksCompany.CompanyAccount.String()
+	companyAccount = strings.Trim(companyAccount, "\"") //TODO: figure out why this is necessary
+
+	removeWebhookInput := r.client.Management().WebhooksCompanyLevelApi.RemoveWebhookInput(companyAccount, state.WebhooksCompany.ID.ValueString())
 	_, err := r.client.Management().WebhooksCompanyLevelApi.RemoveWebhook(ctx, removeWebhookInput)
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -23,15 +23,15 @@ func mapWebhooksAdditionalSettingsProperties(input map[string]bool) map[string]a
 	return output
 }
 
-func mapWebhooksCompanyFilterMerchantAccounts(input []string) []attr.Value {
-	output := make([]attr.Value, len(input))
+func mapWebhooksCompanyFilterMerchantAccountsFromString(input []string) []attr.Value {
+	output := make([]attr.Value, 0, len(input))
 	for _, v := range input {
 		output = append(output, types.StringValue(v))
 	}
 	return output
 }
 
-func mapWebhooksLinks(self *string, generateHmac *string, merchant *string, testWebhook *string) map[string]attr.Value {
+func mapWebhooksLinksMerchant(self *string, generateHmac *string, merchant *string, testWebhook *string) map[string]attr.Value {
 	return map[string]attr.Value{
 		"self": types.ObjectValueMust(map[string]attr.Type{
 			"href": types.StringType,
@@ -56,7 +56,7 @@ func mapWebhooksLinks(self *string, generateHmac *string, merchant *string, test
 	}
 }
 
-var linksAttributeMap = map[string]attr.Type{
+var linksAttributeMapMerchant = map[string]attr.Type{
 	"self": types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"href": types.StringType,
@@ -79,19 +79,55 @@ var linksAttributeMap = map[string]attr.Type{
 	},
 }
 
-var additionalSettingsAttributeMapMerchant = map[string]attr.Type{
-	"include_event_codes": types.ListType{
-		ElemType: types.StringType,
+func mapWebhooksLinksCompany(self *string, generateHmac *string, merchant *string, testWebhook *string) map[string]attr.Value {
+	return map[string]attr.Value{
+		"self": types.ObjectValueMust(map[string]attr.Type{
+			"href": types.StringType,
+		}, map[string]attr.Value{
+			"href": types.StringPointerValue(self),
+		}),
+		"generate_hmac": types.ObjectValueMust(map[string]attr.Type{
+			"href": types.StringType,
+		}, map[string]attr.Value{
+			"href": types.StringPointerValue(generateHmac),
+		}),
+		"company": types.ObjectValueMust(map[string]attr.Type{
+			"href": types.StringType,
+		}, map[string]attr.Value{
+			"href": types.StringPointerValue(merchant),
+		}),
+		"test_webhook": types.ObjectValueMust(map[string]attr.Type{
+			"href": types.StringType,
+		}, map[string]attr.Value{
+			"href": types.StringPointerValue(testWebhook),
+		}),
+	}
+}
+
+var linksAttributeMapCompany = map[string]attr.Type{
+	"self": types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"href": types.StringType,
+		},
 	},
-	"exclude_event_codes": types.ListType{
-		ElemType: types.StringType,
+	"generate_hmac": types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"href": types.StringType,
+		},
 	},
-	"properties": types.MapType{
-		ElemType: types.BoolType,
+	"company": types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"href": types.StringType,
+		},
+	},
+	"test_webhook": types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"href": types.StringType,
+		},
 	},
 }
 
-var additionalSettingsAttributeMapCompany = map[string]attr.Type{
+var additionalSettingsAttributeMap = map[string]attr.Type{
 	"include_event_codes": types.ListType{
 		ElemType: types.StringType,
 	},

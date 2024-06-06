@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"os"
 	"testing"
 )
 
@@ -13,10 +14,12 @@ func testAccCheckAdyenWebhookCompanyDestroy(tfstate *terraform.State) error {
 	suite.SetupSuite()
 	client := suite.client
 
+	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT") //TODO: nil check
+
 	for _, rs := range tfstate.RootModule().Resources {
 		value, ok := rs.Primary.Attributes["webhooks_company.id"]
 		if rs.Type == "adyen_webhooks_company" && ok {
-			data := client.Management().WebhooksCompanyLevelApi.GetWebhookInput("", value)
+			data := client.Management().WebhooksCompanyLevelApi.GetWebhookInput(companyAccount, value)
 			_, resp, err := client.Management().WebhooksCompanyLevelApi.GetWebhook(context.Background(), data)
 			if resp.StatusCode == 422 { // 422 Unprocessable Entity error code from Adyen if resource does not exist.
 				fmt.Printf("adyen_webhooks_company with id: '%s' does not exist and/or has been removed.\n", value)
@@ -47,15 +50,19 @@ func TestAccWebhookCompanyResource(t *testing.T) {
 				ExpectNonEmptyPlan: true, // Creating a tf resource will propose changes, that's why this value is set to 'true'. Can be approached differently by using `PlanOnly: true`.
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "webhooks_company.type", "standard"),
-					resource.TestCheckResourceAttr(resourceName, "webhooks_company.url", "https://webhook.site/test-uuid"),
-					resource.TestCheckResourceAttr(resourceName, "webhooks_company.username", "YOUR_TEST_USER_1"),
-					resource.TestCheckResourceAttr(resourceName, "webhooks_company.active", "false"),
-					resource.TestCheckResourceAttr(resourceName, "webhooks_company.communication_format", "json"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_company.url", "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_company.username", "provider_tf"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_company.active", "true"),
+					resource.TestCheckResourceAttr(resourceName, "webhooks_company.communication_format", "http"),
 					resource.TestCheckResourceAttr(resourceName, "webhooks_company.accepts_expired_certificate", "false"),
 					resource.TestCheckResourceAttr(resourceName, "webhooks_company.accepts_self_signed_certificate", "true"),
 					resource.TestCheckResourceAttr(resourceName, "webhooks_company.accepts_untrusted_root_certificate", "true"),
 					resource.TestCheckResourceAttr(resourceName, "webhooks_company.populate_soap_action_header", "false"),
-					// TODO: Add filterMerchantAccounts + filterMerchantAccountType
+					resource.TestCheckResourceAttr(resourceName, "webhooks_company.filter_merchant_account_type", "includeAccounts"),
+					resource.TestCheckResourceAttr(
+						resourceName, "webhooks_company.filter_merchant_accounts.#", "1"),
+					resource.TestCheckTypeSetElemAttr(
+						resourceName, "webhooks_company.filter_merchant_accounts.*", "WeaveAccountECOM"),
 				),
 			},
 		},
@@ -63,20 +70,22 @@ func TestAccWebhookCompanyResource(t *testing.T) {
 }
 
 func testConfigCreateCompanyWebhook() string {
-	// TODO: Add filterMerchantAccounts + filterMerchantAccountType
 	return `
 	resource "adyen_webhooks_company" "test" {
 		webhooks_company = {
+			company_account 				   = "WeaveAccount"
 			type                               = "standard"
-			url                                = "https://webhook.site/test-uuid"
-			username                           = "YOUR_TEST_USER_1"
-			password                           = "YOUR_TEST_PASSWORD_FROM_TERRAFORM_1"
-			active                             = false
-			communication_format               = "json"
+			password 						   = "secretpassword"
+			url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"
+			username                           = "provider_tf"
+			active                             = true
+			communication_format               = "http"
 			accepts_expired_certificate        = false
 			accepts_self_signed_certificate    = true
 			accepts_untrusted_root_certificate = true
 			populate_soap_action_header        = false
+			filter_merchant_account_type       = "includeAccounts"
+  			filter_merchant_accounts  		   = ["WeaveAccountECOM"]
 		}
 	}
 `
