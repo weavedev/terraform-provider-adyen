@@ -24,13 +24,12 @@ var (
 
 // webhookResource is the resource implementation.
 type webhookCompanyResource struct {
-	client         *adyen.APIClient
-	companyAccount string
+	client *adyen.APIClient
 }
 
 // NewWebhooksCompanyResource is a helper function to simplify the provider implementation.
-func NewWebhooksCompanyResource(companyAccount string) resource.Resource {
-	return &webhookCompanyResource{companyAccount: companyAccount}
+func NewWebhooksCompanyResource() resource.Resource {
+	return &webhookCompanyResource{}
 }
 
 // webhooksCompanyResourceModel maps the "webhooks_company" schema data for a resource.
