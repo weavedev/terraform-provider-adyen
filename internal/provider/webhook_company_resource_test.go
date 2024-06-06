@@ -14,7 +14,7 @@ func testAccCheckAdyenWebhookCompanyDestroy(tfstate *terraform.State) error {
 	suite.SetupSuite()
 	client := suite.client
 
-	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT") //TODO: nil check
+	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT")
 	if companyAccount == "" {
 		return fmt.Errorf("received empty company account")
 	}

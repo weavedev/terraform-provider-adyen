@@ -279,8 +279,8 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 	var filterMerchantAccounts []string
 	if len(plan.WebhooksCompany.FilterMerchantAccounts.Elements()) > 0 {
 		for _, elem := range plan.WebhooksCompany.FilterMerchantAccounts.Elements() {
-			//TODO: add check/util func if elem == string??
-			trimmedElem := strings.Trim(elem.String(), "\"") //TODO: check if needed
+			// Trimming the string is (unfortunately) necessary for Adyen API to work correctly, at this moment.
+			trimmedElem := strings.Trim(elem.String(), "\"")
 			filterMerchantAccounts = append(filterMerchantAccounts, trimmedElem)
 		}
 	}
@@ -296,7 +296,7 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 		)
 		return
 	}
-	companyAccount = strings.Trim(companyAccount, "\"") //TODO: figure out why this is necessary
+	companyAccount = strings.Trim(companyAccount, "\"")
 
 	// Create a new company webhook
 	webhookCompanyCreateRequest := r.client.
