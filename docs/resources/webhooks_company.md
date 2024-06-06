@@ -39,7 +39,6 @@ Required:
 soap
 http
 json
-- `company_account` (String) Company Account of your Adyen environment
 - `type` (String) The type of webhook that is being created. Possible values are:
 
 standard

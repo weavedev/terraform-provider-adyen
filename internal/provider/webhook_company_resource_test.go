@@ -76,7 +76,6 @@ func testConfigCreateCompanyWebhook() string {
 	return `
 	resource "adyen_webhooks_company" "test" {
 		webhooks_company = {
-			company_account 				   = "WeaveAccount"
 			type                               = "standard"
 			password 						   = "secretpassword"
 			url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"

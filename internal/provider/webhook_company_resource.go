@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"os"
 	"strings"
 )
 
@@ -39,7 +40,6 @@ type webhooksCompanyResourceModel struct {
 
 type webhooksCompanyModel struct {
 	ID                              types.String `tfsdk:"id"`
-	CompanyAccount                  types.String `tfsdk:"company_account"` //TODO: not really what we want, this should be somewhere else. Config or something like that.
 	Type                            types.String `tfsdk:"type"`
 	URL                             types.String `tfsdk:"url"`
 	Username                        types.String `tfsdk:"username"`
@@ -102,10 +102,6 @@ func (r *webhookCompanyResource) Schema(ctx context.Context, req resource.Schema
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(), // Required to use this when it is known that an unconfigured value will remain the same after a resource update.
 						},
-					},
-					"company_account": schema.StringAttribute{
-						Required:    true,
-						Description: "Company Account of your Adyen environment",
 					},
 					"type": schema.StringAttribute{
 						Required: true,
@@ -291,8 +287,17 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 	// Add parsed filterMerchantAccounts from plan
 	createCompanyWebhookRequest.FilterMerchantAccounts = filterMerchantAccounts
 
-	companyAccount := plan.WebhooksCompany.CompanyAccount.String()
+	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT")
+	if companyAccount == "" {
+		resp.Diagnostics.AddError(
+			"Error creating company webhook",
+			"Could not create company webhook, unexpected error: "+
+				"Missing 'ADYEN_API_COMPANY_ACCOUNT' environment variable.",
+		)
+		return
+	}
 	companyAccount = strings.Trim(companyAccount, "\"") //TODO: figure out why this is necessary
+
 	// Create a new company webhook
 	webhookCompanyCreateRequest := r.client.
 		Management().
@@ -322,7 +327,6 @@ func (r *webhookCompanyResource) Create(ctx context.Context, req resource.Create
 	plan.WebhooksCompany = webhooksCompanyModel{
 		ID:                              types.StringPointerValue(webhookCompanyCreateResponse.Id),
 		Description:                     types.StringPointerValue(webhookCompanyCreateResponse.Description),
-		CompanyAccount:                  plan.WebhooksCompany.CompanyAccount, //TODO: figure this out
 		Type:                            types.StringValue(webhookCompanyCreateResponse.Type),
 		URL:                             types.StringValue(webhookCompanyCreateResponse.Url),
 		Username:                        types.StringPointerValue(webhookCompanyCreateResponse.Username),
@@ -369,9 +373,19 @@ func (r *webhookCompanyResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
+	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT")
+	if companyAccount == "" {
+		resp.Diagnostics.AddError(
+			"Error creating company webhook",
+			"Could not create company webhook, unexpected error: "+
+				"Missing 'ADYEN_API_COMPANY_ACCOUNT' environment variable.",
+		)
+		return
+	}
+
 	var data management.WebhooksCompanyLevelApiGetWebhookInput
-	if state.WebhooksCompany.CompanyAccount.String() != "" && state.WebhooksCompany.ID.ValueString() != "" {
-		data = r.client.Management().WebhooksCompanyLevelApi.GetWebhookInput(state.WebhooksCompany.CompanyAccount.String(), state.WebhooksCompany.ID.ValueString())
+	if companyAccount != "" && state.WebhooksCompany.ID.ValueString() != "" {
+		data = r.client.Management().WebhooksCompanyLevelApi.GetWebhookInput(companyAccount, state.WebhooksCompany.ID.ValueString())
 	}
 
 	webhookCompanyGetRequest, _, _ := r.client.Management().WebhooksCompanyLevelApi.GetWebhook(ctx, data)
@@ -448,6 +462,17 @@ func (r *webhookCompanyResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
+	// Get company account from env vars
+	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT")
+	if companyAccount == "" {
+		resp.Diagnostics.AddError(
+			"Error creating company webhook",
+			"Could not create company webhook, unexpected error: "+
+				"Missing 'ADYEN_API_COMPANY_ACCOUNT' environment variable.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	updateCompanyWebhookRequest := &management.UpdateCompanyWebhookRequest{
 		AcceptsExpiredCertificate:       plan.WebhooksCompany.AcceptsExpiredCertificate.ValueBoolPointer(),
@@ -465,7 +490,7 @@ func (r *webhookCompanyResource) Update(ctx context.Context, req resource.Update
 	webhookCompanyUpdateRequest := r.client.
 		Management().
 		WebhooksCompanyLevelApi.
-		UpdateWebhookInput(plan.WebhooksCompany.CompanyAccount.String(), plan.WebhooksCompany.ID.ValueString()).
+		UpdateWebhookInput(companyAccount, plan.WebhooksCompany.ID.ValueString()).
 		UpdateCompanyWebhookRequest(*updateCompanyWebhookRequest)
 	webhookCompanyUpdateResponse, _, err := r.client.
 		Management().
@@ -533,7 +558,15 @@ func (r *webhookCompanyResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	companyAccount := state.WebhooksCompany.CompanyAccount.String()
+	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT")
+	if companyAccount == "" {
+		resp.Diagnostics.AddError(
+			"Error creating company webhook",
+			"Could not create company webhook, unexpected error: "+
+				"Missing 'ADYEN_API_COMPANY_ACCOUNT' environment variable.",
+		)
+		return
+	}
 	companyAccount = strings.Trim(companyAccount, "\"") //TODO: figure out why this is necessary
 
 	removeWebhookInput := r.client.Management().WebhooksCompanyLevelApi.RemoveWebhookInput(companyAccount, state.WebhooksCompany.ID.ValueString())

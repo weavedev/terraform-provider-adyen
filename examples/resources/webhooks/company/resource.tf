@@ -15,9 +15,7 @@ provider "adyen" {
 }
 
 resource "adyen_webhooks_company" "example_webhook" {
-  // TODO: Add filterMerchantAccounts + filterMerchantAccountType
   webhooks_company = {
-    company_account                    = var.company_account
     type                               = "standard"
     url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"
     username                           = "provider_tf"
