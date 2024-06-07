@@ -15,7 +15,7 @@ func testAccCheckAdyenWebhookCompanyDestroy(tfstate *terraform.State) error {
 
 	for _, rs := range tfstate.RootModule().Resources {
 		value, ok := rs.Primary.Attributes["webhooks_company.id"]
-		companyAccount, _ := rs.Primary.Attributes["company_account"]
+		companyAccount := rs.Primary.Attributes["company_account"]
 		if rs.Type == "adyen_webhooks_company" && ok {
 			data := client.Management().WebhooksCompanyLevelApi.GetWebhookInput(companyAccount, value)
 			_, resp, err := client.Management().WebhooksCompanyLevelApi.GetWebhook(context.Background(), data)
