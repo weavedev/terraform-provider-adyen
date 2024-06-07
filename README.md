@@ -12,7 +12,7 @@ This repository is a terraform provider for **Adyen**, containing:
 ### Management API
 - Webhooks:
   - [x] Webhook Merchant
-  - [ ] Webhook Company
+  - [x] Webhook Company
 #### 
 - Users
    - [ ] Users Merchant
