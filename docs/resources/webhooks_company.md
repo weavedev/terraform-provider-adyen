@@ -17,6 +17,7 @@ description: |-
 
 ### Required
 
+- `company_account` (String) The company account of your Adyen Dashboard Environment.
 - `webhooks_company` (Attributes) Subscribe to receive webhook notifications about events related to your company account.
 
 You can add basic authentication to make sure the data is secure.

@@ -14,7 +14,7 @@ provider "adyen" {
 }
 
 resource "adyen_webhooks_company" "example_webhook" {
-  company_account  = "WeaveAccount"
+  company_account = "WeaveAccount"
   webhooks_company = {
     type                               = "standard"
     url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"
