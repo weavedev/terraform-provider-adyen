@@ -51,9 +51,6 @@ func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("ADYEN_API_MERCHANT_ACCOUNT"); v == "" {
 		t.Fatal("ADYEN_API_MERCHANT_ACCOUNT must be set for acceptance tests")
 	}
-	if v := os.Getenv("ADYEN_API_COMPANY_ACCOUNT"); v == "" {
-		t.Fatal("ADYEN_API_MERCHANT_ACCOUNT must be set for acceptance tests")
-	}
 }
 
 /*
