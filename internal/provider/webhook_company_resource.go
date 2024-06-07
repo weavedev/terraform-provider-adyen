@@ -233,7 +233,7 @@ func (r *webhookCompanyResource) Schema(ctx context.Context, req resource.Schema
 						},
 					},
 					"filter_merchant_account_type": schema.StringAttribute{
-						Optional: true,
+						Required: true,
 						Description: "Shows how merchant accounts are filtered when configuring the webhook.\n\n" +
 							"Possible values:\n\nallAccounts : Includes all merchant accounts, and does not require specifying " +
 							"filterMerchantAccounts.\nincludeAccounts : The webhook is configured for the merchant accounts listed in filterMerchantAccounts.\n" +
@@ -241,7 +241,7 @@ func (r *webhookCompanyResource) Schema(ctx context.Context, req resource.Schema
 					},
 					"filter_merchant_accounts": schema.ListAttribute{
 						ElementType: types.StringType,
-						Optional:    true,
+						Required:    true,
 						Description: "A list of merchant account names that are included or excluded from receiving the webhook. " +
 							"Inclusion or exclusion is based on the value defined for filterMerchantAccountType.\n\n" +
 							"Required if filterMerchantAccountType is either:\n\nincludeAccounts\nexcludeAccounts\n" +
