@@ -18,7 +18,8 @@ resource "adyen_webhooks_company" "example_webhook" {
   webhooks_company = {
     type                               = "standard"
     url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"
-    username                           = "provider_tf"
+    username                           = "YOUR_USERNAME"
+    password                           = "YOUR_PASSWORD"
     active                             = true
     communication_format               = "http"
     accepts_expired_certificate        = false
