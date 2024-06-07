@@ -13,17 +13,20 @@ provider "adyen" {
   merchant_account = "WeaveAccountECOM"
 }
 
-resource "adyen_webhooks_merchant" "example_webhook" {
-  webhooks_merchant = {
+resource "adyen_webhooks_company" "example_webhook" {
+  company_account = "WeaveAccount"
+  webhooks_company = {
     type                               = "standard"
     url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"
-    username                           = "YOUR_USER"
+    username                           = "YOUR_USERNAME"
     password                           = "YOUR_PASSWORD"
-    active                             = false
-    communication_format               = "json"
+    active                             = true
+    communication_format               = "http"
     accepts_expired_certificate        = false
     accepts_self_signed_certificate    = true
     accepts_untrusted_root_certificate = true
     populate_soap_action_header        = false
+    filter_merchant_account_type       = "includeAccounts"
+    filter_merchant_accounts           = ["WeaveAccountECOM"]
   }
 }

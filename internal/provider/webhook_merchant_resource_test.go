@@ -1,15 +1,11 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"os"
-	"testing"
-	"text/template"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"testing"
 )
 
 func testAccCheckAdyenWebhookMerchantDestroy(tfstate *terraform.State) error {
@@ -47,7 +43,7 @@ func TestAccWebhookMerchantResource(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:             testProviderClientFromTmpl(t) + testConfigCreate(),
+				Config:             testProviderClientFromTmpl(t) + testConfigCreateMerchantWebhook(),
 				ExpectNonEmptyPlan: true, // Creating a tf resource will propose changes, that's why this value is set to 'true'. Can be approached differently by using `PlanOnly: true`.
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "webhooks_merchant.type", "standard"),
@@ -65,7 +61,7 @@ func TestAccWebhookMerchantResource(t *testing.T) {
 	})
 }
 
-func testConfigCreate() string {
+func testConfigCreateMerchantWebhook() string {
 	return `
 	resource "adyen_webhooks_merchant" "test" {
 		webhooks_merchant = {
@@ -82,34 +78,4 @@ func testConfigCreate() string {
 		}
 	}
 `
-}
-
-func testProviderClientFromTmpl(t *testing.T) string {
-	tmplString := `
-	provider "adyen" {
-		api_key = "{{.ApiKey}}"
-		environment = "{{.Environment}}"
-		merchant_account = "{{.MerchantAccount}}"
-		company_account  = "{{.CompanyAccount}}"
-	}
-
-	`
-
-	tmpl, err := template.New("providerClient").Parse(tmplString)
-	if err != nil {
-		t.Fatal("could not create template string from env vars")
-	}
-	varMap := map[string]interface{}{
-		"ApiKey":          os.Getenv("ADYEN_API_KEY"),
-		"Environment":     os.Getenv("ADYEN_API_ENVIRONMENT"),
-		"MerchantAccount": os.Getenv("ADYEN_API_MERCHANT_ACCOUNT"),
-		"CompanyAccount":  os.Getenv("ADYEN_API_COMPANY_ACCOUNT"),
-	}
-
-	var renderedConfig bytes.Buffer
-	if err := tmpl.Execute(&renderedConfig, varMap); err != nil {
-		panic("Failed to render template: " + err.Error())
-	}
-
-	return renderedConfig.String()
 }

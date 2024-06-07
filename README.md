@@ -12,7 +12,7 @@ This repository is a terraform provider for **Adyen**, containing:
 ### Management API
 - Webhooks:
   - [x] Webhook Merchant
-  - [ ] Webhook Company
+  - [x] Webhook Company
 #### 
 - Users
    - [ ] Users Merchant
@@ -80,10 +80,10 @@ terraform {
 }
 
 provider "adyen" {
-  api_key          = "API_KEY"                     // From Step 6
-  environment      = "test"                        // Or "live"
-  merchant_account = "YOUR-ADYEN-MERCHANT-ACCOUNT" // From Step 7
-  company_account  = "YOUR-ADYEN-COMPANY-ACCOUNT"  // From Step 7
+  api_key     = "<api_key>"                       // From Step 6
+  environment = "<environment>"                   // Or "live"
+  merchant_account  = "<merchant_account>"        // From Step 7
+  company_account = "<company_account>"           // From Step 7
 }
 
 # Example resource
