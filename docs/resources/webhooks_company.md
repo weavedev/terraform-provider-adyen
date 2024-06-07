@@ -40,6 +40,20 @@ Required:
 soap
 http
 json
+- `filter_merchant_account_type` (String) Shows how merchant accounts are filtered when configuring the webhook.
+
+Possible values:
+
+allAccounts : Includes all merchant accounts, and does not require specifying filterMerchantAccounts.
+includeAccounts : The webhook is configured for the merchant accounts listed in filterMerchantAccounts.
+excludeAccounts : The webhook is not configured for the merchant accounts listed in filterMerchantAccounts.
+- `filter_merchant_accounts` (List of String) A list of merchant account names that are included or excluded from receiving the webhook. Inclusion or exclusion is based on the value defined for filterMerchantAccountType.
+
+Required if filterMerchantAccountType is either:
+
+includeAccounts
+excludeAccounts
+Not needed for filterMerchantAccountType: allAccounts.
 - `type` (String) The type of webhook that is being created. Possible values are:
 
 standard
@@ -65,20 +79,6 @@ TLSv1.3
 TLSv1.2
  & HTTP. HTTP is Only allowed on Test environment.
 If not specified, the webhook will use sslVersion: TLSv1.2.
-- `filter_merchant_account_type` (String) Shows how merchant accounts are filtered when configuring the webhook.
-
-Possible values:
-
-allAccounts : Includes all merchant accounts, and does not require specifying filterMerchantAccounts.
-includeAccounts : The webhook is configured for the merchant accounts listed in filterMerchantAccounts.
-excludeAccounts : The webhook is not configured for the merchant accounts listed in filterMerchantAccounts.
-- `filter_merchant_accounts` (List of String) A list of merchant account names that are included or excluded from receiving the webhook. Inclusion or exclusion is based on the value defined for filterMerchantAccountType.
-
-Required if filterMerchantAccountType is either:
-
-includeAccounts
-excludeAccounts
-Not needed for filterMerchantAccountType: allAccounts.
 - `password` (String, Sensitive) The password required for basic authentication.
 - `populate_soap_action_header` (Boolean) Indicates if the SOAP action header needs to be populated. Default value: false. Only applies if communicationFormat: soap.
 - `username` (String) Username to access the webhook URL.
