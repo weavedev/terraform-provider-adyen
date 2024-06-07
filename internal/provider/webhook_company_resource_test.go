@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"os"
 	"testing"
 )
 
@@ -14,13 +13,9 @@ func testAccCheckAdyenWebhookCompanyDestroy(tfstate *terraform.State) error {
 	suite.SetupSuite()
 	client := suite.client
 
-	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT")
-	if companyAccount == "" {
-		return fmt.Errorf("received empty company account")
-	}
-
 	for _, rs := range tfstate.RootModule().Resources {
 		value, ok := rs.Primary.Attributes["webhooks_company.id"]
+		companyAccount, ok := rs.Primary.Attributes["company_account"]
 		if rs.Type == "adyen_webhooks_company" && ok {
 			data := client.Management().WebhooksCompanyLevelApi.GetWebhookInput(companyAccount, value)
 			_, resp, err := client.Management().WebhooksCompanyLevelApi.GetWebhook(context.Background(), data)
@@ -75,6 +70,7 @@ func TestAccWebhookCompanyResource(t *testing.T) {
 func testConfigCreateCompanyWebhook() string {
 	return `
 	resource "adyen_webhooks_company" "test" {
+		company_account  = "WeaveAccount"
 		webhooks_company = {
 			type                               = "standard"
 			password 						   = "secretpassword"

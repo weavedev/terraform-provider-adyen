@@ -39,7 +39,6 @@ type adyenProviderModel struct {
 	ApiKey          types.String `tfsdk:"api_key"`
 	Environment     types.String `tfsdk:"environment"`
 	MerchantAccount types.String `tfsdk:"merchant_account"`
-	CompanyAccount  types.String `tfsdk:"company_account"` //TODO: figure out how to use this globally
 }
 
 // Metadata returns the provider type name.
@@ -65,11 +64,6 @@ func (p *adyenProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 				Required:            true,
 				Sensitive:           true,
 				MarkdownDescription: "The Merchant Account ID for the Adyen API Client.",
-			},
-			"company_account": schema.StringAttribute{
-				Required:            true,
-				Sensitive:           true,
-				MarkdownDescription: "The Company Account ID for the Adyen API Client.",
 			},
 		},
 	}
@@ -113,15 +107,6 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		)
 	}
 
-	if config.CompanyAccount.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("company_account"),
-			"Unknown Adyen Company Account",
-			"The provider cannot create the Adyen API client as there is an unknown configuration value for the Adyen API Company Account. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the ADYEN_API_COMPANY_ACCOUNT environment variable.",
-		)
-	}
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -129,7 +114,6 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	apiKey := os.Getenv("ADYEN_API_KEY")
 	environment := os.Getenv("ADYEN_API_ENVIRONMENT")
 	merchantAccount := os.Getenv("ADYEN_API_MERCHANT_ACCOUNT")
-	companyAccount := os.Getenv("ADYEN_API_COMPANY_ACCOUNT")
 
 	if !config.ApiKey.IsNull() {
 		apiKey = config.ApiKey.ValueString()
@@ -141,10 +125,6 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 
 	if !config.MerchantAccount.IsNull() {
 		merchantAccount = config.MerchantAccount.ValueString()
-	}
-
-	if !config.CompanyAccount.IsNull() {
-		companyAccount = config.CompanyAccount.ValueString()
 	}
 
 	if apiKey == "" {
@@ -177,16 +157,6 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		)
 	}
 
-	if companyAccount == "" {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("company_account"),
-			"Missing Adyen API Company Account",
-			"The provider cannot create the Adyen API client as there is a missing or empty value for the Adyen API Company Account. "+
-				"Set the host value in the configuration or use the ADYEN_API_COMPANY_ACCOUNT environment variable. "+
-				"If either is already set, ensure the value is not empty.",
-		)
-	}
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -194,10 +164,9 @@ func (p *adyenProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	ctx = tflog.SetField(ctx, "adyen_apikey", apiKey)
 	ctx = tflog.SetField(ctx, "adyen_environment", environment)
 	ctx = tflog.SetField(ctx, "adyen_merchant_account", merchantAccount)
-	ctx = tflog.SetField(ctx, "adyen_company_account", companyAccount)
 
-	// Add a filter to mask the apikey since it is sensitive information about the environment.
-	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "adyen_apikey", "adyen_merchant_account", "adyen_company_account")
+	// Add a filter to mask since it contains sensitive information about the environment.
+	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "adyen_apikey", "adyen_merchant_account")
 
 	client := adyen.NewClient(&common.Config{
 		ApiKey:          apiKey,

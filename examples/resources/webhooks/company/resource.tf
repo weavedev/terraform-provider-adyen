@@ -8,13 +8,13 @@ terraform {
 }
 
 provider "adyen" {
-  api_key          = var.adyen_api_key
-  environment      = var.environment
-  merchant_account = var.merchant_account
-  company_account  = var.company_account
+  api_key          = "YOUR_API_KEY"
+  environment      = "test"
+  merchant_account = "WeaveAccountECOM"
 }
 
 resource "adyen_webhooks_company" "example_webhook" {
+  company_account  = "WeaveAccount"
   webhooks_company = {
     type                               = "standard"
     url                                = "https://webhook.site/cb798fb3-7092-4cab-986b-f416fb04f92e"

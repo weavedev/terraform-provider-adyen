@@ -13,7 +13,6 @@ func testProviderClientFromTmpl(t *testing.T) string {
 		api_key = "{{.ApiKey}}"
 		environment = "{{.Environment}}"
 		merchant_account = "{{.MerchantAccount}}"
-		company_account  = "{{.CompanyAccount}}"
 	}
 
 	`
@@ -26,7 +25,6 @@ func testProviderClientFromTmpl(t *testing.T) string {
 		"ApiKey":          os.Getenv("ADYEN_API_KEY"),
 		"Environment":     os.Getenv("ADYEN_API_ENVIRONMENT"),
 		"MerchantAccount": os.Getenv("ADYEN_API_MERCHANT_ACCOUNT"),
-		"CompanyAccount":  os.Getenv("ADYEN_API_COMPANY_ACCOUNT"),
 	}
 
 	var renderedConfig bytes.Buffer
