@@ -141,7 +141,69 @@ Development
    ```
 4. Now you are ready to locally develop and test new data-sources, resources or functions for this provider!  
 
-##
+## Contributing to the Provider 
+
+After setting up your local provider install, you can start contributing to the provider.
+1. You should, at this point, have a folder called `terraform-provider-adyen`, `cd` into that folder and create a new branch
+    ```bash
+    cd terraform-provider-adyen
+    git checkout -b feat/<your-feature-name>
+    ```
+
+2. Make the necessary changes to the codebase. Be sure to follow the project's coding standards and best practices.
+3. Add your changes to a new commit
+   ```bash
+    git add .
+   ```
+4. Commit the staged changes with a descriptive message
+    ```bash
+    git commit -m 'Clear description of your changes/additions'
+    ```
+5. Push your changes to the repository 
+    ```bash
+    git push origin feat/<your-feature-name>
+    ```
+6. Finally, navigate to the repository on GitHub and open a pull request from your new branch. Provide a clear description of your changes and any relevant context.
+    
+
+## PR Reviewing Process
+- Your pull request will be reviewed by one of the maintainers.
+- You might be asked to make additional changes.
+- Once the changes are approved, the build & tests pass, your pull request will be merged.
+
+## Additional Tips
+- Keep your changes focused and concise.
+- Ensure your code follows the project's style guidelines.
+- Generate documentation as needed (`go generate ./...`).
+- Write acceptance tests for any new functionality (see: `webhook_merchant_resource_test.go`). Without tests, your PR will not be approved. 
+
+# Creating a Provider Release
+
+To create a release for your provider, follow these steps. The GitHub Action will trigger and create a release whenever a new valid version tag is pushed to the repository. Ensure your Terraform provider versions follow the Semantic Versioning standard (vMAJOR.MINOR.PATCH).
+
+1. **Stage your changes**  
+   Add your changes to a new commit:
+   ```bash
+   git add .
+   ```
+2. **Commit your changes**
+   Commit the staged changes with a descriptive message:
+   ```bash
+    git commit -m 'Add docs, goreleaser, and GH actions'
+   ```
+3. **Create a new tag**
+   Create a new tag following the Semantic Versioning standard (e.g. `v0.0.1`):
+      ```bash
+       git tag v0.0.1
+   ```
+4. **Push the tag to GitHub**
+   Push the new tag to GitHub to trigger the release action:
+    ```bash
+   git push origin v0.0.1
+    ```
+   Once the tag is pushed, GitHub Actions will automatically trigger the workflow to create a new release for your provider.
+
+#### Thank you for contributing! We appreciate your help in improving our provider.
 
 
 
